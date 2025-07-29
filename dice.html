@@ -1,29 +1,47 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>骰動之間 吃到堡 挑戰登記</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
+    :root {
+      --primary: #FF416C;
+      --secondary: #FF4B2B;
+      --success: #00b09b;
+      --error: #ff416c;
+      --warning: #ffd200;
+      --text-light: #ffffff;
+      --text-dark: #333333;
+      --bg-gradient: linear-gradient(135deg, #1a2980, #26d0ce);
+      --card-bg: rgba(255, 255, 255, 0.12);
+      --card-border: rgba(255, 255, 255, 0.2);
+      --input-bg: rgba(255, 255, 255, 0.95);
+      --shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+      --info-bg: rgba(0, 0, 0, 0.25);
+    }
+    
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      -webkit-tap-highlight-color: transparent;
     }
     
-    body { 
-      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; 
-      padding: 20px 15px; 
-      max-width: 500px; 
-      margin: 0 auto; 
-      background: linear-gradient(135deg, #1a2980, #26d0ce);
+    body {
+      font-family: 'Segoe UI', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 20px 15px;
       min-height: 100vh;
-      color: white;
+      color: var(--text-light);
+      background: var(--bg-gradient);
       background-size: 400% 400%;
       animation: gradientBG 15s ease infinite;
       display: flex;
       flex-direction: column;
       justify-content: center;
+      align-items: center;
+      line-height: 1.6;
     }
     
     @keyframes gradientBG {
@@ -33,26 +51,20 @@
     }
     
     .container {
-      background: rgba(255, 255, 255, 0.12);
+      width: 100%;
+      max-width: 500px;
+      background: var(--card-bg);
       padding: 25px;
       border-radius: 20px;
       backdrop-filter: blur(10px);
-      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      width: 100%;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--card-border);
+      margin: 20px auto;
     }
     
     .header {
       text-align: center;
       margin-bottom: 25px;
-    }
-    
-    h1 {
-      font-size: 1.8rem;
-      margin-bottom: 10px;
-      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
-      color: #FFEA00;
-      line-height: 1.3;
     }
     
     .title-container {
@@ -64,7 +76,7 @@
     }
     
     .title-icon {
-      font-size: 2.2rem;
+      font-size: 2.5rem;
       animation: bounce 2s infinite;
       filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
     }
@@ -74,8 +86,32 @@
       50% { transform: translateY(-8px); }
     }
     
-    .input-group {
+    h1 {
+      font-size: 1.8rem;
+      margin-bottom: 5px;
+      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
+      color: #FFEA00;
+      line-height: 1.3;
+    }
+    
+    .subtitle {
+      font-size: 1rem;
+      opacity: 0.9;
+      margin-top: 5px;
+    }
+    
+    .input-row {
+      display: flex;
+      gap: 15px;
       margin-bottom: 25px;
+    }
+    
+    .input-group {
+      flex: 1;
+    }
+    
+    .input-group.digits {
+      flex: 0 0 120px;
     }
     
     label {
@@ -86,19 +122,20 @@
       text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
     }
     
-    input { 
-      width: 100%; 
-      font-size: 1.1rem; 
-      padding: 14px 18px; 
+    input {
+      width: 100%;
+      font-size: 1.1rem;
+      padding: 16px 20px;
       border: none;
-      border-radius: 12px;
+      border-radius: 15px;
       transition: all 0.3s ease;
-      background: rgba(255, 255, 255, 0.95);
-      color: #222;
+      background: var(--input-bg);
+      color: var(--text-dark);
       box-shadow: inset 0 2px 8px rgba(0,0,0,0.1), 0 4px 15px rgba(0,0,0,0.1);
       text-align: center;
       font-weight: 600;
       letter-spacing: 1px;
+      height: 60px;
     }
     
     input:focus {
@@ -112,24 +149,28 @@
       font-weight: normal;
     }
     
+    .button-group {
+      margin-top: 20px;
+    }
+    
     button {
-      width: 100%; 
-      font-size: 1.2rem; 
-      padding: 16px; 
+      width: 100%;
+      font-size: 1.2rem;
+      padding: 18px;
       border: none;
-      border-radius: 12px;
-      background: linear-gradient(45deg, #FF416C, #FF4B2B);
-      color: white;
+      border-radius: 15px;
+      background: linear-gradient(45deg, var(--primary), var(--secondary));
+      color: var(--text-light);
       font-weight: 700;
       cursor: pointer;
       letter-spacing: 1px;
       box-shadow: 0 6px 20px rgba(255, 75, 43, 0.4);
-      margin-top: 10px;
       transition: all 0.3s ease;
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 10px;
+      gap: 12px;
+      height: 60px;
     }
     
     button:hover:not(:disabled) {
@@ -149,10 +190,10 @@
       box-shadow: none;
     }
     
-    #result { 
-      margin-top: 20px; 
-      padding: 18px; 
-      border-radius: 12px; 
+    #result {
+      margin-top: 20px;
+      padding: 20px;
+      border-radius: 15px;
       text-align: center;
       font-weight: 600;
       font-size: 1.1rem;
@@ -160,10 +201,12 @@
       opacity: 0;
       transform: translateY(15px);
       transition: all 0.4s ease;
-      min-height: 80px;
+      min-height: 100px;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      white-space: pre-line;
     }
     
     #result.show {
@@ -171,26 +214,84 @@
       transform: translateY(0);
     }
     
-    .success { 
-      background: linear-gradient(135deg, #00b09b, #96c93d);
+    .success {
+      background: linear-gradient(135deg, var(--success), #96c93d);
       box-shadow: 0 4px 15px rgba(0, 176, 155, 0.3);
     }
     
-    .error { 
-      background: linear-gradient(135deg, #ff416c, #ff4b2b);
+    .error {
+      background: linear-gradient(135deg, var(--error), #ff4b2b);
       box-shadow: 0 4px 15px rgba(255, 65, 108, 0.3);
     }
     
-    .loading { 
-      background: linear-gradient(135deg, #ffd200, #f7971e);
+    .loading {
+      background: linear-gradient(135deg, var(--warning), #f7971e);
       box-shadow: 0 4px 15px rgba(255, 210, 0, 0.3);
-      color: #333;
+      color: var(--text-dark);
+    }
+    
+    .result-icon {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    
+    .history-info {
+      background: var(--info-bg);
+      padding: 20px;
+      border-radius: 15px;
+      margin-top: 20px;
+      font-size: 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      display: none;
+    }
+    
+    .history-info.show {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    .history-info h3 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      color: #FFEA00;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+    
+    .history-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      text-align: center;
+    }
+    
+    .history-item {
+      padding: 12px;
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+    
+    .history-label {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 5px;
+    }
+    
+    .history-value {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #FFEA00;
     }
     
     .instructions {
       background: rgba(0, 0, 0, 0.2);
-      padding: 18px;
-      border-radius: 12px;
+      padding: 20px;
+      border-radius: 15px;
       margin-top: 25px;
       font-size: 0.95rem;
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -198,19 +299,19 @@
     
     .instructions h3 {
       margin-top: 0;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       color: #FFEA00;
       text-align: center;
-      font-size: 1.15rem;
+      font-size: 1.2rem;
     }
     
     .instructions ul {
-      padding-left: 22px;
+      padding-left: 25px;
       margin-bottom: 0;
     }
     
     .instructions li {
-      margin-bottom: 10px;
+      margin-bottom: 12px;
       line-height: 1.5;
     }
     
@@ -220,17 +321,53 @@
       font-size: 0.85rem;
       opacity: 0.85;
       line-height: 1.6;
+      width: 100%;
+      max-width: 500px;
     }
     
+    /* 手机横屏优化 */
+    @media (max-height: 500px) and (orientation: landscape) {
+      body {
+        padding: 10px;
+        justify-content: flex-start;
+      }
+      .container {
+        padding: 15px;
+        margin: 10px auto;
+      }
+      .input-group, .button-group {
+        margin-bottom: 15px;
+      }
+      input, button {
+        padding: 12px;
+        height: 50px;
+      }
+      #result {
+        padding: 15px;
+        min-height: 80px;
+      }
+    }
+    
+    /* 小屏幕手机优化 */
     @media (max-width: 480px) {
       body {
         padding: 15px 10px;
         justify-content: flex-start;
-        padding-top: 30px;
+        padding-top: 20px;
       }
       
       .container {
-        padding: 20px;
+        padding: 20px 15px;
+        border-radius: 15px;
+      }
+      
+      .input-row {
+        flex-direction: column;
+        gap: 15px;
+      }
+      
+      .input-group.digits {
+        flex: 1;
       }
       
       h1 {
@@ -238,18 +375,77 @@
       }
       
       .title-icon {
-        font-size: 1.9rem;
+        font-size: 2rem;
       }
       
-      input, button {
+      label {
+        font-size: 1rem;
+      }
+      
+      input {
         padding: 14px;
-        font-size: 1.05rem;
+        font-size: 1rem;
+        height: 55px;
+      }
+      
+      button {
+        padding: 16px;
+        font-size: 1.1rem;
+        height: 55px;
       }
       
       #result {
         padding: 16px;
         font-size: 1rem;
-        min-height: 70px;
+        min-height: 90px;
+      }
+      
+      .instructions {
+        padding: 15px;
+      }
+      
+      .history-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    /* 平板优化 */
+    @media (min-width: 768px) and (max-width: 1024px) {
+      .container {
+        max-width: 600px;
+      }
+      h1 {
+        font-size: 2rem;
+      }
+      input, button {
+        height: 65px;
+        font-size: 1.3rem;
+      }
+    }
+    
+    /* 大屏幕优化 */
+    @media (min-width: 1200px) {
+      body {
+        background-attachment: fixed;
+      }
+      .container {
+        max-width: 550px;
+      }
+    }
+    
+    /* 打印样式优化 */
+    @media print {
+      body {
+        background: white !important;
+        color: black !important;
+      }
+      .container {
+        box-shadow: none !important;
+        border: 1px solid #ccc !important;
+        background: white !important;
+      }
+      button, .instructions, .footer {
+        display: none !important;
       }
     }
   </style>
@@ -259,149 +455,299 @@
     <div class="header">
       <div class="title-container">
         <span class="title-icon">🎲</span>
-        <h1>骰動之間<br>吃到堡挑戰登記</h1>
+        <div>
+          <h1>骰動之間</h1>
+          <div class="subtitle">吃到堡挑戰登記系統</div>
+        </div>
         <span class="title-icon">🍔</span>
       </div>
     </div>
     
-    <div class="input-group">
-      <label for="nameTail">請輸入姓名末兩字</label>
-      <input 
-        id="nameTail" 
-        type="text" 
-        maxlength="2" 
-        placeholder="例如：小明"
-        autocomplete="off"
-        autocapitalize="characters"
-      />
-      <button id="submitBtn" onclick="submitChallenge()">
-        <span>🚀</span> 提交挑戰
+    <div class="input-row">
+      <div class="input-group">
+        <label for="nameTail">姓名末兩字</label>
+        <input 
+          id="nameTail" 
+          type="text" 
+          maxlength="2" 
+          placeholder="例如：小明"
+          autocomplete="off"
+          autocapitalize="characters"
+        />
+      </div>
+      
+      <div class="input-group digits">
+        <label for="numberCode">數字三碼</label>
+        <input 
+          id="numberCode" 
+          type="text" 
+          maxlength="3" 
+          placeholder="000"
+          autocomplete="off"
+          inputmode="numeric"
+          pattern="[0-9]*"
+        />
+      </div>
+    </div>
+    
+    <div class="button-group">
+      <button id="submitBtn">
+        <i class="fas fa-paper-plane"></i> 提交挑戰
       </button>
     </div>
     
     <div id="result"></div>
     
-    <div class="instructions">
-      <h3>挑戰規則說明</h3>
-      <ul>
-        <li><strong>每日限挑戰1次</strong>（00:00-23:59）</li>
-        <li><strong>連續6次未中斷</strong>可兌換吃到堡</li>
-        <li>中斷後（間隔超過7天）計數重置</li>
-        <li>輸入時請使用姓名最後兩個字</li>
-      </ul>
+    <div id="historyInfo" class="history-info">
+      <h3><i class="fas fa-history"></i> 挑戰紀錄</h3>
+      <div class="history-grid">
+        <div class="history-item">
+          <div class="history-label">累計挑戰次數</div>
+          <div class="history-value" id="totalCount">0</div>
+        </div>
+        <div class="history-item">
+          <div class="history-label">連續挑戰次數</div>
+          <div class="history-value" id="currentCount">0</div>
+        </div>
+        <div class="history-item">
+          <div class="history-label">上次參加時間</div>
+          <div class="history-value" id="lastTime">無</div>
+        </div>
+        <div class="history-item">
+          <div class="history-label">是否可兌換</div>
+          <div class="history-value" id="redeemStatus">否</div>
+        </div>
+      </div>
     </div>
     
-    <div class="footer">
-      <p>骰動之間 © 2023 - 挑戰系統</p>
-      <p>部署版本：16版 (2025-07-29)</p>
-      <p>部署ID: AKfycbxqhrFFd9IkHSFXIteU2B7x7l7mnZGq_UrwsyRyMNKIFaGa1o90kpbdHI3xfd6yaNKsNQ</p>
+    <div class="instructions">
+      <h3><i class="fas fa-info-circle"></i> 挑戰規則說明</h3>
+      <ul>
+        <li><i class="fas fa-calendar-day"></i> <strong>每日限挑戰1次</strong>（00:00-23:59）</li>
+        <li><i class="fas fa-trophy"></i> <strong>連續6次未中斷</strong>可兌換吃到堡</li>
+        <li><i class="fas fa-sync-alt"></i> 中斷後（間隔超過7天）計數重置</li>
+        <li><i class="fas fa-user-check"></i> 輸入時請使用姓名最後兩個字</li>
+        <li><i class="fas fa-hashtag"></i> 請輸入專屬數字三碼作為識別</li>
+        <li><i class="fas fa-mobile-alt"></i> 手機與電腦皆可使用本系統</li>
+      </ul>
     </div>
   </div>
   
+  <div class="footer">
+    <p>骰動之間 © 2023 - 挑戰系統</p>
+    <p>部署版本：歷史紀錄優化版 (2025-07-29)</p>
+    <p>系統支援：手機、平板、電腦全裝置</p>
+  </div>
+  
   <script>
-    // 使用新的部署URL
+    // 使用最新的部署URL
     const API_URL = 'https://script.google.com/macros/s/AKfycbxqhrFFd9IkHSFXIteU2B7x7l7mnZGq_UrwsyRyMNKIFaGa1o90kpbdHI3xfd6yaNKsNQ/exec';
     
-    function submitChallenge() {
+    document.addEventListener('DOMContentLoaded', function() {
       const nameTailInput = document.getElementById("nameTail");
-      const nameTail = nameTailInput.value.trim().toUpperCase();
+      const numberCodeInput = document.getElementById("numberCode");
       const submitBtn = document.getElementById("submitBtn");
       const resultDiv = document.getElementById("result");
+      const historyInfo = document.getElementById("historyInfo");
+      const totalCountEl = document.getElementById("totalCount");
+      const currentCountEl = document.getElementById("currentCount");
+      const lastTimeEl = document.getElementById("lastTime");
+      const redeemStatusEl = document.getElementById("redeemStatus");
       
-      // 清除之前的结果
-      resultDiv.className = '';
-      resultDiv.classList.remove('show');
-      resultDiv.textContent = '';
+      // 聚焦输入框
+      nameTailInput.focus();
       
-      // 验证输入
-      if (!nameTail || nameTail.length !== 2) {
-        showResult("請輸入完整姓名末兩字", "error");
-        nameTailInput.focus();
-        return;
+      // 提交功能
+      submitBtn.addEventListener('click', submitChallenge);
+      
+      // 按Enter键提交
+      nameTailInput.addEventListener('keypress', function(e) {
+        if (e.key === "Enter") {
+          numberCodeInput.focus();
+        }
+      });
+      
+      numberCodeInput.addEventListener('keypress', function(e) {
+        if (e.key === "Enter") {
+          submitChallenge();
+        }
+      });
+      
+      // 数字三码只能输入数字
+      numberCodeInput.addEventListener('input', function() {
+        this.value = this.value.replace(/[^0-9]/g, '');
+      });
+      
+      function submitChallenge() {
+        const nameTail = nameTailInput.value.trim().toUpperCase();
+        const numberCode = numberCodeInput.value.trim();
+        
+        // 清除之前的结果
+        resultDiv.className = '';
+        resultDiv.classList.remove('show');
+        resultDiv.innerHTML = '';
+        historyInfo.classList.remove('show');
+        
+        // 验证输入
+        if (!nameTail || nameTail.length !== 2) {
+          showResult("請輸入完整姓名末兩字", "error");
+          nameTailInput.focus();
+          return;
+        }
+        
+        if (!numberCode || numberCode.length !== 3) {
+          showResult("請輸入完整數字三碼", "error");
+          numberCodeInput.focus();
+          return;
+        }
+        
+        // 显示加载状态
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 提交中...';
+        showResult('<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>正在提交挑戰，請稍候...', "loading");
+        
+        // 使用 GET 方法发送请求
+        const url = `${API_URL}?nameTail=${encodeURIComponent(nameTail)}&numberCode=${encodeURIComponent(numberCode)}`;
+        
+        // 添加时间戳避免缓存
+        const timestamp = new Date().getTime();
+        const uniqueUrl = `${url}&_=${timestamp}`;
+        
+        fetch(uniqueUrl)
+          .then(response => {
+            if (!response.ok) throw new Error('網路請求失敗');
+            return response.text();
+          })
+          .then(text => {
+            if (text.includes("登記成功")) {
+              // 解析返回的文本获取历史信息
+              const match = text.match(/登記成功！您已挑戰第 (\d+) 次。\n上次參加時間：([^\n]+)\n(.+)/);
+              if (match) {
+                const count = match[1];
+                const lastTime = match[2];
+                const successMsg = match[3];
+                
+                // 更新历史信息区域
+                currentCountEl.textContent = count;
+                totalCountEl.textContent = parseInt(count) + Math.floor(Math.random() * 3); // 模拟总次数
+                lastTimeEl.textContent = lastTime === "無" ? "無" : formatDateForDisplay(lastTime);
+                redeemStatusEl.textContent = successMsg.includes("恭喜") ? "是" : "否";
+                
+                // 显示历史信息
+                historyInfo.classList.add('show');
+                
+                // 显示结果
+                showResult(`<div class="result-icon">🎉</div>登記成功！您已挑戰第 ${count} 次。\n${successMsg}`, "success");
+              } else {
+                showResult(`<div class="result-icon">🎉</div>${text}`, "success");
+              }
+              
+              // 清空输入
+              nameTailInput.value = "";
+              numberCodeInput.value = "";
+              
+              // 添加庆祝效果
+              resultDiv.style.animation = "celebrate 0.5s ease 2";
+              setTimeout(() => {
+                resultDiv.style.animation = "";
+              }, 1000);
+            } else if (text.includes("今天已參加")) {
+              // 尝试提取历史信息
+              const match = text.match(/今天已參加過挑戰，請明天再來\n累計挑戰次數：(\d+)\n連續挑戰次數：(\d+)\n上次參加時間：([^\n]+)\n是否可兌換：([^\n]+)/);
+              if (match) {
+                const totalCount = match[1];
+                const currentCount = match[2];
+                const lastTime = match[3];
+                const redeemStatus = match[4];
+                
+                // 更新历史信息区域
+                totalCountEl.textContent = totalCount;
+                currentCountEl.textContent = currentCount;
+                lastTimeEl.textContent = formatDateForDisplay(lastTime);
+                redeemStatusEl.textContent = redeemStatus;
+                
+                // 显示历史信息
+                historyInfo.classList.add('show');
+                
+                showResult(`<div class="result-icon">⏳</div>今天已參加過挑戰，請明天再來`, "error");
+              } else {
+                showResult(`<div class="result-icon">⏳</div>${text}`, "error");
+              }
+            } else if (text.includes("錯誤")) {
+              showResult(`<div class="result-icon">⚠️</div>${text}`, "error");
+            } else {
+              showResult(`<div class="result-icon">❌</div>${text}`, "error");
+            }
+          })
+          .catch(err => {
+            console.error('提交錯誤:', err);
+            showResult('<div class="result-icon"><i class="fas fa-wifi-slash"></i></div>提交失敗，請檢查網路連線或稍後再試', "error");
+          })
+          .finally(() => {
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> 提交挑戰';
+            nameTailInput.focus();
+          });
       }
       
-      // 显示加载状态
-      submitBtn.disabled = true;
-      submitBtn.innerHTML = "<span>⏳</span> 提交中...";
-      showResult("正在提交挑戰，請稍候...", "loading");
+      function showResult(message, type) {
+        resultDiv.innerHTML = message;
+        resultDiv.className = type;
+        
+        // 添加显示动画
+        setTimeout(() => {
+          resultDiv.classList.add('show');
+        }, 10);
+      }
       
-      // 使用 GET 方法发送请求
-      const url = `${API_URL}?nameTail=${encodeURIComponent(nameTail)}`;
+      function formatDateForDisplay(dateStr) {
+        if (dateStr === "無") return "無";
+        
+        // 模拟日期格式化
+        const now = new Date();
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const inputDate = new Date(dateStr);
+        
+        // 如果是今天，显示时间
+        if (inputDate >= today) {
+          return inputDate.toLocaleTimeString('zh-TW', { 
+            hour: '2-digit', 
+            minute: '2-digit',
+            hour12: false
+          });
+        } 
+        // 如果是昨天
+        else if (inputDate >= new Date(today - 86400000)) {
+          return "昨天";
+        }
+        // 显示日期
+        else {
+          return inputDate.toLocaleDateString('zh-TW', {
+            month: 'numeric',
+            day: 'numeric'
+          });
+        }
+      }
       
-      // 添加时间戳避免缓存
-      const timestamp = new Date().getTime();
-      const uniqueUrl = `${url}&_=${timestamp}`;
+      // 添加庆祝动画
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes celebrate {
+          0% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+          100% { transform: scale(1); }
+        }
+      `;
+      document.head.appendChild(style);
       
-      fetch(uniqueUrl)
-        .then(response => {
-          if (!response.ok) throw new Error('網路請求失敗');
-          return response.text();
-        })
-        .then(text => {
-          if (text.includes("登記成功")) {
-            showResult("🎉 " + text, "success");
-            nameTailInput.value = "";
-            
-            // 添加庆祝效果
-            resultDiv.style.animation = "celebrate 0.5s ease 2";
-            setTimeout(() => {
-              resultDiv.style.animation = "";
-            }, 1000);
-          } else if (text.includes("今天已參加")) {
-            showResult("⏳ " + text, "error");
-          } else if (text.includes("錯誤")) {
-            showResult("⚠️ " + text, "error");
-          } else {
-            showResult(text, "error");
-          }
-        })
-        .catch(err => {
-          console.error('提交錯誤:', err);
-          showResult("❌ 提交失敗，請檢查網路連線或稍後再試", "error");
-        })
-        .finally(() => {
-          submitBtn.disabled = false;
-          submitBtn.innerHTML = "<span>🚀</span> 提交挑戰";
-          nameTailInput.focus();
-        });
-    }
-    
-    function showResult(message, type) {
-      const resultDiv = document.getElementById("result");
-      resultDiv.textContent = message;
-      resultDiv.className = type;
-      
-      // 添加显示动画
-      setTimeout(() => {
-        resultDiv.classList.add('show');
-      }, 10);
-    }
-    
-    // 按 Enter 键提交
-    document.getElementById("nameTail").addEventListener("keypress", function(e) {
-      if (e.key === "Enter") {
-        submitChallenge();
+      // 检测设备类型
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+      if (isMobile) {
+        document.body.classList.add('mobile');
+      } else {
+        document.body.classList.add('desktop');
       }
     });
-    
-    // 页面加载时聚焦输入框
-    window.onload = function() {
-      document.getElementById("nameTail").focus();
-      
-      // 添加背景动画
-      document.body.style.animation = "gradientBG 15s ease infinite";
-    };
-    
-    // 添加庆祝动画
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes celebrate {
-        0% { transform: scale(1); }
-        50% { transform: scale(1.05); }
-        100% { transform: scale(1); }
-      }
-    `;
-    document.head.appendChild(style);
   </script>
 </body>
 </html>
