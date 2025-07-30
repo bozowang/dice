@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机 (伺服器驗證版)</title>
+  <title>骰動之間 - 骰子吃角子老虎机 (精準保底版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -119,9 +119,9 @@
         <li><i class="fas fa-calendar-day"></i> <strong>每日限定：</strong> 每個帳號每天僅限遊玩一個回合 (3次機會)。</li>
         <li><i class="fas fa-desktop"></i> <strong>裝置綁定：</strong> 每個裝置僅能註冊一組帳號。</li>
         <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者需出示與註冊姓名相符之**合法證件**領獎。</li>
-        <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六骰相同即中「波士頓花生奶油堡」。</li>
+        <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六骰相同即中「波士頓花生奶油堡」。中獎後保底計數歸零。</li>
         <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 跨回合**連續 6 次未中獎**，第 7 次必中「免費吃到堡」。</li>
-        <li><i class="fas fa-exclamation-circle"></i> <strong>保底限領：</strong> 「免費吃到堡」大獎每位玩家限領一次。</li>
+        <li><i class="fas fa-exclamation-circle"></i> <strong>保底限領：</strong> 「免費吃到堡」大獎**每位玩家限領一次**，領取後永久失去保底資格。</li>
       </ul>
     </div>
   </div>
@@ -149,9 +149,7 @@
     const formSection = document.getElementById('formSection');
     
     function initGame() {
-      // ***** 這是實現自動登入的關鍵 *****
       checkDeviceLock();
-      
       verifyBtn.addEventListener('click', handleLoginAttempt);
       spinBtn.addEventListener('click', spinReels);
       numberCodeInput.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
@@ -165,18 +163,15 @@
       } catch (error) { gameState.ipAddress = '無法取得'; }
     }
 
-    // 當頁面載入時，檢查裝置是否已經被綁定
     function checkDeviceLock() {
         const lockedPlayerKey = localStorage.getItem('dice_device_locked_player_key');
         if (lockedPlayerKey) {
-            // 如果已綁定，直接用該身份去伺服器驗證資格，跳過手動登入
             const name = lockedPlayerKey.split('_')[3];
             const code = lockedPlayerKey.split('_')[4];
-            verifyPlayerRemotely(name, code, lockedPlayerKey, true); // true 代表是自動登入
+            verifyPlayerRemotely(name, code, lockedPlayerKey, true);
         }
     }
 
-    // 處理手動點擊「註冊/登入」按鈕的事件
     function handleLoginAttempt() {
         const nameTail = nameTailInput.value.trim().toUpperCase();
         const numberCode = numberCodeInput.value.trim();
@@ -187,22 +182,19 @@
         const lockedPlayerKey = localStorage.getItem('dice_device_locked_player_key');
         const currentPlayerKey = `dice_player_v2_${nameTail}_${numberCode}`;
 
-        // 如果裝置已被其他帳號鎖定，則拒絕
         if (lockedPlayerKey && lockedPlayerKey !== currentPlayerKey) {
             alert("此裝置已被其他帳號鎖定，無法登入。");
             return;
         }
         
-        // 進行伺服器驗證
-        verifyPlayerRemotely(nameTail, numberCode, currentPlayerKey, false); // false 代表是手動登入
+        verifyPlayerRemotely(nameTail, numberCode, currentPlayerKey, false);
     }
     
     async function verifyPlayerRemotely(name, code, playerKey, isAutoLogin) {
-        if (!isAutoLogin) { // 如果是手動登入，才顯示驗證中訊息
+        if (!isAutoLogin) {
             showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>正在連線伺服器驗證身份...`, "loading");
         }
         
-        // ***** 使用您最新的部署網址 *****
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxK-3VOJ85yxbpQF5o-CSWaJo5HJtt3VruP8SiK8UFWBufLOfzySeoJ1nTyf9Coe2CgoQ/exec';
         
         const verificationURL = `${scriptURL}?action=verifyPlayer&name=${encodeURIComponent(name)}&code=${encodeURIComponent(code)}`;
@@ -212,13 +204,12 @@
             if (!response.ok) throw new Error(`伺服器錯誤: ${response.statusText}`);
             const result = await response.json();
 
-            if(result.status === 'OK') { // 後端說可以玩
-                // 如果是首次登入，就鎖定裝置
+            if(result.status === 'OK') {
                 if (!localStorage.getItem('dice_device_locked_player_key')) {
                     localStorage.setItem('dice_device_locked_player_key', playerKey);
                 }
                 loginPlayer(playerKey, name, code);
-            } else if (result.status === 'PLAYED_TODAY') { // 後端說今天玩過了
+            } else if (result.status === 'PLAYED_TODAY') {
                 showDailyLockScreen();
             } else {
                 throw new Error(result.message || '未知的伺服器錯誤');
@@ -234,7 +225,6 @@
         gameState.isVerified = true;
         gameState.playerInfo = { nameTail: name, numberCode: code };
         gameState.playerKey = playerKey;
-        // 從本地讀取保底計數等資料
         gameState.playerData = JSON.parse(localStorage.getItem(playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false };
         
         gameState.spinsRemaining = 3;
@@ -242,7 +232,17 @@
         spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
         spinBtn.disabled = false;
         
-        showResult(`<div class="result-icon">👍</div>歡迎, ${name}！<br>您今天有 3 次擲骰機會。`, "success");
+        let message;
+        if (gameState.playerData.hasClaimedGuaranteedPrize) {
+            message = `歡迎回來, ${name}！<br>您已領取過保底大獎，祝您幸運中獎！`;
+        } else {
+            const playCount = gameState.playerData.playCount;
+            const remaining = 6 - playCount;
+            message = playCount < 6 
+                ? `歡迎回來！您已累積 ${playCount} 次未中獎。<br>再 ${remaining} 次即可獲得保底獎勵！`
+                : `歡迎回來！<br><b>本次擲骰為您的保底獎勵局！</b>`;
+        }
+        showResult(`<div class="result-icon">👍</div>${message}`, "success");
     }
     
     function showDailyLockScreen() {
@@ -325,10 +325,13 @@
       if (isWin) {
         showResult(`<div class="result-icon">🎉</div>恭喜中獎！<br>您贏得<b>${prize}</b>一份！<br>(${remark})<br><br>今日回合結束。`, "jackpot");
         confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+        
+        // --- 這是本次修改的核心邏輯 ---
         if (remark === "第7次保底獎勵") {
-            gameState.playerData.hasClaimedGuaranteedPrize = true;
+            gameState.playerData.hasClaimedGuaranteedPrize = true; // 永久失去保底資格
         }
-        gameState.playerData.playCount = 0;
+        gameState.playerData.playCount = 0; // 任何中獎都會讓保底計數歸零
+        
         endGameSession();
       } else {
         localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
@@ -345,7 +348,7 @@
     }
 
     function endGameSession() {
-        // 在本地儲存玩家的保底計數等資料
+        gameState.playerData.lastPlayDate = new Date().toISOString().split('T')[0];
         localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
         spinBtn.disabled = true;
         spinBtn.textContent = "今日回合已結束";
