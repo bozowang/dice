@@ -79,7 +79,6 @@
     
     #daily-countdown { font-size: 1.3rem; font-weight: bold; }
     
-    /* --- 新增：進度條樣式 --- */
     .progress-bar-container {
         width: 80%;
         height: 20px;
@@ -153,7 +152,6 @@
     
     const symbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
     const spinAnimations = ['spin-x', 'spin-y', 'spin-z', 'spin-xy'];
-    let countdownInterval = null;
     let dailyLockInterval = null;
 
     const reels = document.querySelectorAll('.reel');
@@ -215,23 +213,25 @@
         if(dailyLockInterval) clearInterval(dailyLockInterval);
         slotMachine.style.display = 'none';
         
-        // --- 修改處：先顯示靜態文字，再啟動不閃爍的倒數更新 ---
-        showResult(`<div class="result-icon">⏳</div>您今日的回合已結束！<br>請明天再來挑戰。<br>下次開放倒數：<div id="daily-countdown">00:00:00</div>`, "error");
+        showResult(`<div class="result-icon">⏳</div>您今日的回合已結束！<br>請明天再來挑戰。<br>下次開放倒數：<div id="daily-countdown">--:--:--</div>`, "error");
 
-        const countdownElement = document.getElementById('daily-countdown');
-        const updateCountdown = () => {
-            const now = new Date();
-            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-            const diff = tomorrow - now;
-            const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-            const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-            const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-            if (countdownElement) {
+        // --- 修正處：確保 DOM 元素存在後再啟動計時器 ---
+        setTimeout(() => {
+            const countdownElement = document.getElementById('daily-countdown');
+            if (!countdownElement) return; // 如果找不到元素，就直接返回
+
+            const updateCountdown = () => {
+                const now = new Date();
+                const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                const diff = tomorrow - now;
+                const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+                const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+                const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
                 countdownElement.textContent = `${h}:${m}:${s}`;
-            }
-        };
-        updateCountdown();
-        dailyLockInterval = setInterval(updateCountdown, 1000);
+            };
+            updateCountdown();
+            dailyLockInterval = setInterval(updateCountdown, 1000);
+        }, 250); // 延遲 250 毫秒，確保 showResult 的動畫已完成
     }
     
     function verifyPlayer() {
@@ -258,32 +258,37 @@
       gameState.isSpinning = true;
       spinBtn.disabled = true;
 
-      // --- 修改處：啟動進度條倒數 ---
       showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中...<div class="progress-bar-container"><div class="progress-bar"></div></div>`, "loading");
-      const progressBar = document.querySelector('.progress-bar');
-      let startTime = Date.now();
-      const duration = 10000;
       
-      const updateProgress = () => {
-          const elapsedTime = Date.now() - startTime;
-          const progress = Math.min(elapsedTime / duration, 1);
-          const remainingProgress = 1 - Math.pow(progress, 2); // 越走越快的關鍵
+      // 確保進度條元素存在後才操作
+      setTimeout(() => {
+          const progressBar = document.querySelector('.progress-bar');
+          if (!progressBar) return;
           
-          progressBar.style.width = `${remainingProgress * 100}%`;
+          let startTime = Date.now();
+          const duration = 10000;
+          
+          const updateProgress = () => {
+              const elapsedTime = Date.now() - startTime;
+              const progress = Math.min(elapsedTime / duration, 1);
+              const remainingProgress = 1 - Math.pow(progress, 2);
+              
+              progressBar.style.width = `${remainingProgress * 100}%`;
 
-          if (remainingProgress < 0.25) {
-              progressBar.style.backgroundColor = '#d32f2f'; // 紅色
-          } else if (remainingProgress < 0.6) {
-              progressBar.style.backgroundColor = '#fbc02d'; // 黃色
-          } else {
-              progressBar.style.backgroundColor = '#388e3c'; // 綠色
-          }
+              if (remainingProgress < 0.25) {
+                  progressBar.style.backgroundColor = '#d32f2f';
+              } else if (remainingProgress < 0.6) {
+                  progressBar.style.backgroundColor = '#fbc02d';
+              } else {
+                  progressBar.style.backgroundColor = '#388e3c';
+              }
 
-          if (elapsedTime < duration) {
-              requestAnimationFrame(updateProgress);
-          }
-      };
-      requestAnimationFrame(updateProgress);
+              if (elapsedTime < duration) {
+                  requestAnimationFrame(updateProgress);
+              }
+          };
+          requestAnimationFrame(updateProgress);
+      }, 50);
 
       gameState.playerData.playCount++;
       const isGuaranteedWin = gameState.playerData.playCount >= 7 && !gameState.playerData.hasClaimedGuaranteedPrize;
