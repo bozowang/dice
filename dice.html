@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机 (伺服器驗證版)</title>
+  <title>骰動之間 - 骰子吃角子老虎机 (雲端驗證版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -100,7 +100,7 @@
         <label for="numberCode">數字三碼</label>
         <input id="numberCode" type="text" maxlength="3" placeholder="000" autocomplete="off" inputmode="numeric" />
       </div>
-      <button id="verifyBtn">註冊/登入</button>
+      <button id="verifyBtn">登入 / 註冊新帳號</button>
     </div>
     
     <div class="slot-machine" id="slotMachine">
@@ -117,7 +117,7 @@
       <h3 style="text-align:center;">遊戲規則</h3>
       <ul>
         <li><i class="fas fa-calendar-day"></i> <strong>每日限定：</strong> 每個帳號每天僅限遊玩一個回合 (3次機會)。</li>
-        <li><i class="fas fa-desktop"></i> <strong>裝置綁定：</strong> 每個裝置僅能註冊一組帳號。</li>
+        <!-- --- 修改處：移除了裝置綁定的規則說明 --- -->
         <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者需出示與註冊姓名相符之**合法證件**領獎。</li>
         <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六骰相同即中「波士頓花生奶油堡」。</li>
         <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 跨回合**連續 6 次未中獎**，第 7 次必中「免費吃到堡」。</li>
@@ -149,6 +149,7 @@
     const formSection = document.getElementById('formSection');
     
     function initGame() {
+      // --- 修改處：不再自動檢查裝置，而是等待用戶點擊 ---
       verifyBtn.addEventListener('click', handleLoginAttempt);
       spinBtn.addEventListener('click', spinReels);
       numberCodeInput.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
@@ -169,21 +170,13 @@
         if (!nameTail || nameTail.length !== 2) return alert("請輸入與證件相符的姓名末兩字");
         if (!numberCode || numberCode.length !== 3) return alert("請輸入完整數字三碼");
 
-        const lockedPlayerKey = localStorage.getItem('dice_device_locked_player_key');
-        const currentPlayerKey = `dice_player_v2_${nameTail}_${numberCode}`;
-
-        if (lockedPlayerKey && lockedPlayerKey !== currentPlayerKey) {
-            alert("此裝置已被其他帳號鎖定，無法登入。");
-            return;
-        }
-        
-        verifyPlayerRemotely(nameTail, numberCode, currentPlayerKey);
+        // --- 修改處：不再檢查本地裝置鎖，直接向後端驗證 ---
+        verifyPlayerRemotely(nameTail, numberCode);
     }
     
-    async function verifyPlayerRemotely(name, code, playerKey) {
+    async function verifyPlayerRemotely(name, code) {
         showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>正在連線伺服器驗證身份...`, "loading");
         
-        // ***** 這裏是本次最重要的修改 *****
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxK-3VOJ85yxbpQF5o-CSWaJo5HJtt3VruP8SiK8UFWBufLOfzySeoJ1nTyf9Coe2CgoQ/exec';
         
         const verificationURL = `${scriptURL}?action=verifyPlayer&name=${encodeURIComponent(name)}&code=${encodeURIComponent(code)}`;
@@ -194,10 +187,7 @@
             const result = await response.json();
 
             if(result.status === 'OK') {
-                if (!localStorage.getItem('dice_device_locked_player_key')) {
-                    localStorage.setItem('dice_device_locked_player_key', playerKey);
-                }
-                loginPlayer(playerKey, name, code);
+                loginPlayer(name, code);
             } else if (result.status === 'PLAYED_TODAY') {
                 showDailyLockScreen();
             } else {
@@ -208,13 +198,14 @@
         }
     }
 
-    function loginPlayer(playerKey, name, code) {
+    function loginPlayer(name, code) {
         formSection.style.display = 'none';
         
         gameState.isVerified = true;
         gameState.playerInfo = { nameTail: name, numberCode: code };
-        gameState.playerKey = playerKey;
-        gameState.playerData = JSON.parse(localStorage.getItem(playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false };
+        // --- 修改處：playerKey 直接由當前登入資訊決定 ---
+        gameState.playerKey = `dice_player_v2_${name}_${code}`;
+        gameState.playerData = JSON.parse(localStorage.getItem(gameState.playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false };
         
         gameState.spinsRemaining = 3;
         slotMachine.style.display = 'block';
@@ -317,14 +308,14 @@
             spinBtn.disabled = false;
             spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
         } else {
-            showResult(`<div class="result-icon">😥</div>今日 3 次機會已用完，<br>請明天再來挑戰！`, "error");
+            showResult(`<div class="result-icon">😥</div>今日 3 次機會已用完，<br>請重新整理頁面以登出。`, "error");
             endGameSession();
         }
       }
     }
 
     function endGameSession() {
-        gameState.playerData.lastPlayDate = new Date().toISOString().split('T')[0];
+        // --- 修改處：不再儲存 lastPlayDate，因為驗證已交給後端 ---
         localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
         spinBtn.disabled = true;
         spinBtn.textContent = "今日回合已結束";
@@ -332,7 +323,6 @@
     }
     
     function logToGoogleSheets(isWin, prize, remark) {
-      // ***** 這裏是本次最重要的修改 *****
       const scriptURL = 'https://script.google.com/macros/s/AKfycbxK-3VOJ85yxbpQF5o-CSWaJo5HJtt3VruP8SiK8UFWBufLOfzySeoJ1nTyf9Coe2CgoQ/exec';
       const data = {
         numberCode: gameState.playerInfo.numberCode,
@@ -361,17 +351,4 @@
     initGame();
   </script>
 </body>
-</html>```
-
-### 操作說明與確認
-
-1.  **替換程式碼**：將上方完整的 HTML 程式碼，取代您現有的 `.html` 檔案。
-2.  **確認後端**：您的後端 Google Apps Script 不需要做任何修改，只要確認它已經是上一版包含 `doGet` 函數的版本即可。
-3.  **測試**：
-    *   用瀏覽器打開新的 HTML 檔案。
-    *   註冊一個新帳號並玩完一回合。
-    *   **關鍵測試**：關閉瀏覽器或清除暫存檔。
-    *   重新打開遊戲頁面，嘗試用**同一個帳號**登入。您會發現系統會提示「此帳號今日已遊玩過」，並顯示倒數計時，無法再進入遊戲。
-    *   這證明了驗證機制已經從「相信前端」轉變為「相信後端」，成功堵住了漏洞。
-
-現在，您的遊戲活動已經擁有了銀行級別的安全驗證機制，可以放心使用了！
+</html>
