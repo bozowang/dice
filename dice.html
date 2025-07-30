@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机 (7日懲罰版)</title>
+  <title>骰動之間 - 骰子吃角子老虎机 (自動保底版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -116,19 +116,14 @@
     <div class="instructions" style="margin-top:25px;">
       <h3 style="text-align:center;">遊戲規則</h3>
       <ul>
-         <li><i class="fas fa-calendar-day"></i> <strong>每日限定：</strong> 每個帳號每天僅限遊玩一個回合 (3次機會)。</li>
+        <li><i class="fas fa-calendar-day"></i> <strong>每日限定：</strong> 每個帳號每天僅限遊玩一個回合 (3次機會)。</li>
         <li><i class="fas fa-desktop"></i> <strong>裝置綁定：</strong> 每個裝置僅能註冊一組帳號。</li>
         <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者需出示與註冊姓名相符之**合法證件**領獎。</li>
         <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六骰相同即中「波士頓花生奶油堡」。</li>
         <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 連續 **6 個回合** 未中獎，第 **7 回合** 不用擲我們直接送您「免費吃到堡」。</li>
         <li><i class="fas fa-exclamation-circle"></i> <strong>保底限領：</strong> 「免費吃到堡」大獎每位玩家限領一次。</li>
-        <!-- --- 新增處：7天懲罰規則 --- -->
         <li><i class="fas fa-history"></i> <strong>連續參與：</strong> 每回合間隔不得超過七天，若超過 **7 天**，累積的保底進度將會**自動歸零**。</li>
-<li><i class="fas fa-history"></i> <strong>每日中獎：</strong>數量有限。</li>
-<li><i class="fas fa-history"></i> <strong>中獎：</strong>僅限現場參與並由工作人員見證之情況下方為有效。</li>
-
-
-
+        <li><i class="fas fa-history"></i> <strong>每日中獎：</strong>數量有限。僅限現場參與並由工作人員見證之情況下方為有效。</li>
       </ul>
     </div>
   </div>
@@ -219,23 +214,26 @@
         gameState.isVerified = true;
         gameState.playerInfo = { nameTail: name, numberCode: code };
         gameState.playerKey = playerKey;
-        // --- 修改處：增加 lastCompletionDate 和 7天懲罰邏輯 ---
         gameState.playerData = JSON.parse(localStorage.getItem(playerKey)) || { roundCount: 0, hasClaimedGuaranteedPrize: false, lastCompletionDate: null };
         
         let penaltyMessage = '';
         if (gameState.playerData.lastCompletionDate) {
             const lastDate = new Date(gameState.playerData.lastCompletionDate);
             const today = new Date();
-            // 將時間設為午夜，以準確計算天數差異
             lastDate.setHours(0, 0, 0, 0);
             today.setHours(0, 0, 0, 0);
             const diffTime = Math.abs(today - lastDate);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            
             if (diffDays >= 7) {
-                gameState.playerData.roundCount = 0; // 進度歸零
-                penaltyMessage = `<br><small style="color:#ffc107;">由於您已超過7天未參與，保底進度已重新計算。</small>`;
+                gameState.playerData.roundCount = 0;
+                penaltyMessage = `<br><small style="color:#ffc107;">由於您已超過7天未參與，保底進度已歸零。</small>`;
             }
+        }
+
+        // --- 這是本次修改的核心邏輯：登入時檢查自動保底 ---
+        if (gameState.playerData.roundCount >= 6 && !gameState.playerData.hasClaimedGuaranteedPrize) {
+            handleGuaranteedWin();
+            return; // 結束函數，不顯示遊戲機
         }
 
         gameState.spinsRemaining = 3;
@@ -249,11 +247,24 @@
         } else {
             const roundCount = gameState.playerData.roundCount;
             const remaining = 6 - roundCount;
-            message = roundCount < 6 
-                ? `歡迎回來！您已累積 ${roundCount} 回合未中獎。<br>再 ${remaining} 回合即可獲得保底獎勵！`
-                : `歡迎回來！<br><b>本日為您的保底獎勵回合！</b>`;
+            message = `歡迎回來！您已累積 ${roundCount} 回合未中獎。<br>再 ${remaining} 回合即可獲得保底獎勵！`;
         }
         showResult(`<div class="result-icon">👍</div>${message}${penaltyMessage}`, "success");
+    }
+
+    // --- 新增：處理自動保底中獎的專用函數 ---
+    function handleGuaranteedWin() {
+        const prize = "免費吃到堡";
+        const remark = "第7回合自動保底";
+
+        showResult(`<div class="result-icon">🎉</div>恭喜您，${gameState.playerInfo.nameTail}！<br>您已達成連續6回合未中獎的條件！<br>我們直接送您<b>${prize}</b>一份！<br><br>今日回合結束。`, "jackpot");
+        confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+        
+        logToGoogleSheets(true, prize, remark);
+
+        gameState.playerData.hasClaimedGuaranteedPrize = true;
+        gameState.playerData.roundCount = 0;
+        endGameSession(true);
     }
     
     function showDailyLockScreen() {
@@ -294,16 +305,12 @@
         if (countdown <= 0) clearInterval(countdownInterval);
       }, 1000);
 
-      const isGuaranteedWin = gameState.playerData.roundCount >= 6 && !gameState.playerData.hasClaimedGuaranteedPrize;
-      const isLuckyWin = Math.random() < 0.02;
-      const isWin = (gameState.spinsRemaining === 3 && isGuaranteedWin) || isLuckyWin;
+      const isLuckyWin = Math.random() < 0.02; // 現在只判斷幸運中獎
+      const isWin = isLuckyWin;
       
       let prize = "無";
       let remark = "";
-      if (gameState.spinsRemaining === 3 && isGuaranteedWin) {
-        prize = "免費吃到堡";
-        remark = "第7回合保底獎勵";
-      } else if (isLuckyWin) {
+      if (isLuckyWin) {
         prize = "波士頓花生奶油堡";
         remark = "幸運中獎";
       }
@@ -329,10 +336,7 @@
       if (isWin) {
         showResult(`<div class="result-icon">🎉</div>恭喜中獎！<br>您贏得<b>${prize}</b>一份！<br>(${remark})<br><br>今日回合結束。`, "jackpot");
         confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
-        if (remark.includes("保底")) {
-            gameState.playerData.hasClaimedGuaranteedPrize = true;
-        }
-        gameState.playerData.roundCount = 0;
+        gameState.playerData.roundCount = 0; // 中幸運獎，回合計數歸零
         endGameSession(true);
       } else {
         if(gameState.spinsRemaining > 0) {
@@ -342,19 +346,19 @@
             spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
         } else {
             showResult(`<div class="result-icon">😥</div>今日 3 次機會已用完，<br>請明天再來挑戰！`, "error");
-            gameState.playerData.roundCount++;
+            gameState.playerData.roundCount++; // 回合結束未中獎，回合計數+1
             endGameSession(false);
         }
       }
     }
 
     function endGameSession(didWin) {
-        // --- 修改處：記錄的是 "完成日期" ---
         gameState.playerData.lastCompletionDate = new Date().toISOString().split('T')[0];
         localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
-        spinBtn.disabled = true;
-        spinBtn.textContent = didWin ? "恭喜中獎！" : "今日回合已結束";
-        gameState.isSpinning = false;
+        if (didWin) { // 只有在中獎時才禁用按鈕，讓玩家看到結果
+            spinBtn.disabled = true;
+            spinBtn.textContent = "恭喜中獎！";
+        }
     }
     
     function logToGoogleSheets(isWin, prize, remark) {
