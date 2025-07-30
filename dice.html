@@ -77,8 +77,25 @@
     .reel.is-spinning { animation-duration: 9.5s; animation-timing-function: ease-in-out; animation-fill-mode: forwards; }
     .spin-x { animation-name: spin-x; } .spin-y { animation-name: spin-y; } .spin-z { animation-name: spin-z; } .spin-xy { animation-name: spin-xy; }
     
-    #countdown-timer { font-size: 1.5rem; font-weight: bold; color: var(--text-dark); margin-top: 10px; }
     #daily-countdown { font-size: 1.3rem; font-weight: bold; }
+    
+    /* --- 新增：進度條樣式 --- */
+    .progress-bar-container {
+        width: 80%;
+        height: 20px;
+        background-color: rgba(0, 0, 0, 0.3);
+        border-radius: 10px;
+        margin-top: 15px;
+        overflow: hidden;
+    }
+    .progress-bar {
+        width: 100%;
+        height: 100%;
+        border-radius: 10px;
+        background: linear-gradient(90deg, #d32f2f, #fbc02d, #388e3c);
+        transition: width 0.1s linear, background-color 0.5s linear;
+        transform-origin: left;
+    }
 
     @media (max-width: 768px) { :root{--dice-size:80px;} .reel{font-size:3.5rem;} }
     @media (max-width: 480px) { :root{--dice-size:70px;} .reel{font-size:3rem;} h1{font-size:1.8rem;} }
@@ -180,10 +197,8 @@
         gameState.playerKey = playerKey;
         gameState.playerData = JSON.parse(localStorage.getItem(playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false, lastPlayDate: '' };
         
-        // --- 修改處：每日限制核心邏輯 ---
         const today = new Date().toISOString().split('T')[0];
         if(gameState.playerData.lastPlayDate === today) {
-            // 如果今天已經玩過，則顯示倒數計時
             showDailyLockScreen();
             return;
         }
@@ -195,11 +210,15 @@
         
         showResult(`<div class="result-icon">👍</div>歡迎回來, ${name}！<br>您今天有 3 次擲骰機會。`, "success");
     }
-
-    // --- 新增：顯示每日鎖定畫面的函數 ---
+    
     function showDailyLockScreen() {
         if(dailyLockInterval) clearInterval(dailyLockInterval);
         slotMachine.style.display = 'none';
+        
+        // --- 修改處：先顯示靜態文字，再啟動不閃爍的倒數更新 ---
+        showResult(`<div class="result-icon">⏳</div>您今日的回合已結束！<br>請明天再來挑戰。<br>下次開放倒數：<div id="daily-countdown">00:00:00</div>`, "error");
+
+        const countdownElement = document.getElementById('daily-countdown');
         const updateCountdown = () => {
             const now = new Date();
             const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -207,7 +226,9 @@
             const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
             const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
             const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-            showResult(`<div class="result-icon">⏳</div>您今日的回合已結束！<br>請明天再來挑戰。<br>下次開放倒數：<div id="daily-countdown">${h}:${m}:${s}</div>`, "error");
+            if (countdownElement) {
+                countdownElement.textContent = `${h}:${m}:${s}`;
+            }
         };
         updateCountdown();
         dailyLockInterval = setInterval(updateCountdown, 1000);
@@ -237,15 +258,32 @@
       gameState.isSpinning = true;
       spinBtn.disabled = true;
 
-      if (countdownInterval) clearInterval(countdownInterval);
-      let countdown = 10;
-      showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中...<div id="countdown-timer">${countdown}</div>`, "loading");
-      countdownInterval = setInterval(() => {
-        countdown--;
-        const timerEl = document.getElementById('countdown-timer');
-        if (timerEl) timerEl.textContent = countdown > 0 ? countdown : 0;
-        if (countdown <= 0) clearInterval(countdownInterval);
-      }, 1000);
+      // --- 修改處：啟動進度條倒數 ---
+      showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中...<div class="progress-bar-container"><div class="progress-bar"></div></div>`, "loading");
+      const progressBar = document.querySelector('.progress-bar');
+      let startTime = Date.now();
+      const duration = 10000;
+      
+      const updateProgress = () => {
+          const elapsedTime = Date.now() - startTime;
+          const progress = Math.min(elapsedTime / duration, 1);
+          const remainingProgress = 1 - Math.pow(progress, 2); // 越走越快的關鍵
+          
+          progressBar.style.width = `${remainingProgress * 100}%`;
+
+          if (remainingProgress < 0.25) {
+              progressBar.style.backgroundColor = '#d32f2f'; // 紅色
+          } else if (remainingProgress < 0.6) {
+              progressBar.style.backgroundColor = '#fbc02d'; // 黃色
+          } else {
+              progressBar.style.backgroundColor = '#388e3c'; // 綠色
+          }
+
+          if (elapsedTime < duration) {
+              requestAnimationFrame(updateProgress);
+          }
+      };
+      requestAnimationFrame(updateProgress);
 
       gameState.playerData.playCount++;
       const isGuaranteedWin = gameState.playerData.playCount >= 7 && !gameState.playerData.hasClaimedGuaranteedPrize;
@@ -278,7 +316,6 @@
     }
     
     function checkResult(isWin, prize, remark) {
-      clearInterval(countdownInterval);
       logToGoogleSheets(isWin, prize, remark);
       
       gameState.spinsRemaining--;
@@ -306,7 +343,7 @@
     }
 
     function endGameSession() {
-        gameState.playerData.lastPlayDate = new Date().toISOString().split('T')[0]; // --- 修改處：記錄今天的遊玩日期 ---
+        gameState.playerData.lastPlayDate = new Date().toISOString().split('T')[0];
         localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
         spinBtn.disabled = true;
         spinBtn.textContent = "今日回合已結束";
