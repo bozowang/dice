@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机 (精準保底版)</title>
+  <title>骰動之間 - 骰子吃角子老虎机 (音效+儀表板最終版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -24,7 +24,7 @@
     .container {
       width: 100%; max-width: 800px; background: rgba(0, 0, 0, 0.25); padding: 25px;
       border-radius: 20px; backdrop-filter: blur(10px); box-shadow: var(--shadow);
-      border: 1px solid rgba(255, 255, 255, 0.2); margin: 20px auto;
+      border: 1px solid rgba(255, 255, 255, 0.2); margin: 20px auto; position: relative;
     }
     .header { text-align: center; margin-bottom: 25px; }
     h1 {
@@ -80,6 +80,26 @@
     #daily-countdown { font-size: 1.3rem; font-weight: bold; }
     #countdown-timer { font-size: 1.5rem; font-weight: bold; color: var(--text-dark); margin-top: 10px; }
 
+    /* --- 新增：靜音按鈕樣式 --- */
+    #mute-btn {
+        position: absolute;
+        bottom: 15px;
+        right: 20px;
+        background: rgba(0,0,0,0.3);
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        margin: 0;
+    }
+
     @media (max-width: 768px) { :root{--dice-size:80px;} .reel{font-size:3.5rem;} }
     @media (max-width: 480px) { :root{--dice-size:70px;} .reel{font-size:3rem;} h1{font-size:1.8rem;} }
   </style>
@@ -119,11 +139,14 @@
         <li><i class="fas fa-calendar-day"></i> <strong>每日限定：</strong> 每個帳號每天僅限遊玩一個回合 (3次機會)。</li>
         <li><i class="fas fa-desktop"></i> <strong>裝置綁定：</strong> 每個裝置僅能註冊一組帳號。</li>
         <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者需出示與註冊姓名相符之**合法證件**領獎。</li>
-        <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六骰相同即中「波士頓花生奶油堡」。中獎後保底計數歸零。</li>
+        <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六骰相同即中「波士頓花生奶油堡」。</li>
         <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 跨回合**連續 6 次未中獎**，第 7 次必中「免費吃到堡」。</li>
-        <li><i class="fas fa-exclamation-circle"></i> <strong>保底限領：</strong> 「免費吃到堡」大獎**每位玩家限領一次**，領取後永久失去保底資格。</li>
+        <li><i class="fas fa-exclamation-circle"></i> <strong>保底限領：</strong> 「免費吃到堡」大獎每位玩家限領一次。</li>
       </ul>
     </div>
+    
+    <!-- --- 新增：靜音按鈕 --- -->
+    <button id="mute-btn"><i class="fas fa-volume-up"></i></button>
   </div>
   
   <script>
@@ -131,7 +154,18 @@
       isVerified: false, isSpinning: false,
       playerInfo: {}, ipAddress: '載入中...',
       playerData: {}, playerKey: '',
-      spinsRemaining: 3
+      spinsRemaining: 3,
+      isMuted: false, // --- 新增：靜音狀態 ---
+      audioInitialized: false // --- 新增：音效是否已初始化 ---
+    };
+
+    // --- 新增：音效資源 ---
+    const sounds = {
+        click: new Audio('https://cdn.pixabay.com/audio/2022/03/15/audio_2b236052f3.mp3'),
+        spin: new Audio('https://cdn.pixabay.com/audio/2022/11/22/audio_51d7984b90.mp3'),
+        win: new Audio('https://cdn.pixabay.com/audio/2022/01/24/audio_eb33883391.mp3'),
+        jackpot: new Audio('https://cdn.pixabay.com/audio/2022/05/23/audio_84535961d7.mp3'),
+        lose: new Audio('https://cdn.pixabay.com/audio/2021/08/04/audio_5443219a12.mp3')
     };
     
     const symbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
@@ -147,13 +181,58 @@
     const resultDiv = document.getElementById('result');
     const slotMachine = document.getElementById('slotMachine');
     const formSection = document.getElementById('formSection');
+    const muteBtn = document.getElementById('mute-btn'); // --- 新增 ---
     
     function initGame() {
       checkDeviceLock();
       verifyBtn.addEventListener('click', handleLoginAttempt);
       spinBtn.addEventListener('click', spinReels);
+      muteBtn.addEventListener('click', toggleMute); // --- 新增 ---
       numberCodeInput.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
       getIPAddress();
+    }
+
+    // --- 新增：播放音效的函數 ---
+    function playSound(soundName) {
+        if (gameState.isMuted || !gameState.audioInitialized) return;
+        const sound = sounds[soundName];
+        if (sound) {
+            sound.currentTime = 0; // 從頭播放
+            sound.play();
+        }
+    }
+    
+    // --- 新增：停止音效的函數 ---
+    function stopSound(soundName) {
+        const sound = sounds[soundName];
+        if (sound && !sound.paused) {
+            sound.pause();
+            sound.currentTime = 0;
+        }
+    }
+
+    // --- 新增：切換靜音的函數 ---
+    function toggleMute() {
+        playSound('click');
+        gameState.isMuted = !gameState.isMuted;
+        muteBtn.innerHTML = gameState.isMuted ? '<i class="fas fa-volume-mute"></i>' : '<i class="fas fa-volume-up"></i>';
+        // 如果設為靜音，則停止所有正在播放的聲音
+        if (gameState.isMuted) {
+            Object.keys(sounds).forEach(stopSound);
+        }
+    }
+    
+    // --- 新增：初始化音效的函數 ---
+    function initializeAudio() {
+        if (gameState.audioInitialized) return;
+        // 嘗試播放一個無聲的音檔來"喚醒"瀏覽器的音效功能
+        Object.values(sounds).forEach(sound => {
+            sound.volume = 0;
+            sound.play().catch(e => {}); // 忽略錯誤
+            sound.pause();
+            sound.volume = 1;
+        });
+        gameState.audioInitialized = true;
     }
 
     async function getIPAddress() {
@@ -173,20 +252,18 @@
     }
 
     function handleLoginAttempt() {
+        initializeAudio(); // --- 修改處：在第一次互動時初始化音效 ---
+        playSound('click');
         const nameTail = nameTailInput.value.trim().toUpperCase();
         const numberCode = numberCodeInput.value.trim();
-      
         if (!nameTail || nameTail.length !== 2) return alert("請輸入與證件相符的姓名末兩字");
         if (!numberCode || numberCode.length !== 3) return alert("請輸入完整數字三碼");
-
         const lockedPlayerKey = localStorage.getItem('dice_device_locked_player_key');
         const currentPlayerKey = `dice_player_v2_${nameTail}_${numberCode}`;
-
         if (lockedPlayerKey && lockedPlayerKey !== currentPlayerKey) {
             alert("此裝置已被其他帳號鎖定，無法登入。");
             return;
         }
-        
         verifyPlayerRemotely(nameTail, numberCode, currentPlayerKey, false);
     }
     
@@ -194,16 +271,12 @@
         if (!isAutoLogin) {
             showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>正在連線伺服器驗證身份...`, "loading");
         }
-        
         const scriptURL = 'https://script.google.com/macros/s/AKfycbxK-3VOJ85yxbpQF5o-CSWaJo5HJtt3VruP8SiK8UFWBufLOfzySeoJ1nTyf9Coe2CgoQ/exec';
-        
         const verificationURL = `${scriptURL}?action=verifyPlayer&name=${encodeURIComponent(name)}&code=${encodeURIComponent(code)}`;
-
         try {
             const response = await fetch(verificationURL);
             if (!response.ok) throw new Error(`伺服器錯誤: ${response.statusText}`);
             const result = await response.json();
-
             if(result.status === 'OK') {
                 if (!localStorage.getItem('dice_device_locked_player_key')) {
                     localStorage.setItem('dice_device_locked_player_key', playerKey);
@@ -211,27 +284,20 @@
                 loginPlayer(playerKey, name, code);
             } else if (result.status === 'PLAYED_TODAY') {
                 showDailyLockScreen();
-            } else {
-                throw new Error(result.message || '未知的伺服器錯誤');
-            }
-        } catch (error) {
-            showResult(`<div class="result-icon">❌</div>驗證失敗：${error.message}<br>請檢查網路連線或聯繫管理員。`, "error");
-        }
+            } else { throw new Error(result.message || '未知的伺服器錯誤'); }
+        } catch (error) { showResult(`<div class="result-icon">❌</div>驗證失敗：${error.message}`, "error"); }
     }
 
     function loginPlayer(playerKey, name, code) {
         formSection.style.display = 'none';
-        
         gameState.isVerified = true;
         gameState.playerInfo = { nameTail: name, numberCode: code };
         gameState.playerKey = playerKey;
         gameState.playerData = JSON.parse(localStorage.getItem(playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false };
-        
         gameState.spinsRemaining = 3;
         slotMachine.style.display = 'block';
         spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
         spinBtn.disabled = false;
-        
         let message;
         if (gameState.playerData.hasClaimedGuaranteedPrize) {
             message = `歡迎回來, ${name}！<br>您已領取過保底大獎，祝您幸運中獎！`;
@@ -249,13 +315,10 @@
         if(dailyLockInterval) clearInterval(dailyLockInterval);
         slotMachine.style.display = 'none';
         formSection.style.display = 'none';
-        
         showResult(`<div class="result-icon">⏳</div>您今日的回合已結束！<br>請明天再來挑戰。<br>下次開放倒數：<div id="daily-countdown">--:--:--</div>`, "error");
-
         setTimeout(() => {
             const countdownElement = document.getElementById('daily-countdown');
             if (!countdownElement) return;
-
             const updateCountdown = () => {
                 const now = new Date();
                 const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
@@ -272,10 +335,9 @@
     
     function spinReels() {
       if (!gameState.isVerified || gameState.isSpinning || gameState.spinsRemaining <= 0) return;
-      
+      playSound('click');
       gameState.isSpinning = true;
       spinBtn.disabled = true;
-
       if (countdownInterval) clearInterval(countdownInterval);
       let countdown = 10;
       showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中...<div id="countdown-timer">${countdown}</div>`, "loading");
@@ -286,54 +348,43 @@
         if (countdown <= 0) clearInterval(countdownInterval);
       }, 1000);
 
+      sounds.spin.loop = true; // 讓旋轉音效循環播放
+      playSound('spin');
+      
       gameState.playerData.playCount++;
       const isGuaranteedWin = gameState.playerData.playCount >= 7 && !gameState.playerData.hasClaimedGuaranteedPrize;
       const isLuckyWin = Math.random() < 0.02;
       const isWin = isGuaranteedWin || isLuckyWin;
-      
       let prize = "無";
       let remark = "";
-      if (isGuaranteedWin) {
-        prize = "免費吃到堡";
-        remark = "第7次保底獎勵";
-      } else if (isLuckyWin) {
-        prize = "波士頓花生奶油堡";
-        remark = "幸運中獎";
-      }
-
+      if (isGuaranteedWin) { prize = "免費吃到堡"; remark = "第7次保底獎勵"; } 
+      else if (isLuckyWin) { prize = "波士頓花生奶油堡"; remark = "幸運中獎"; }
       const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-      
       reels.forEach((reel) => {
         reel.className = 'reel';
         void reel.offsetWidth;
         reel.className = `reel is-spinning ${spinAnimations[Math.floor(Math.random() * spinAnimations.length)]}`;
-        
-        setTimeout(() => {
-          reel.textContent = isWin ? winSymbol : symbols[Math.floor(Math.random() * symbols.length)];
-        }, 9500);
+        setTimeout(() => { reel.textContent = isWin ? winSymbol : symbols[Math.floor(Math.random() * symbols.length)]; }, 9500);
       });
-
       setTimeout(() => checkResult(isWin, prize, remark), 10000);
     }
     
     function checkResult(isWin, prize, remark) {
+      stopSound('spin');
       clearInterval(countdownInterval);
       logToGoogleSheets(isWin, prize, remark);
-      
       gameState.spinsRemaining--;
-
       if (isWin) {
+        playSound(remark === "第7次保底獎勵" ? 'jackpot' : 'win');
         showResult(`<div class="result-icon">🎉</div>恭喜中獎！<br>您贏得<b>${prize}</b>一份！<br>(${remark})<br><br>今日回合結束。`, "jackpot");
         confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
-        
-        // --- 這是本次修改的核心邏輯 ---
         if (remark === "第7次保底獎勵") {
-            gameState.playerData.hasClaimedGuaranteedPrize = true; // 永久失去保底資格
+            gameState.playerData.hasClaimedGuaranteedPrize = true;
         }
-        gameState.playerData.playCount = 0; // 任何中獎都會讓保底計數歸零
-        
+        gameState.playerData.playCount = 0;
         endGameSession();
       } else {
+        playSound('lose');
         localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
         if(gameState.spinsRemaining > 0) {
             showResult(`<div class="result-icon">🎲</div>未中獎，再接再厲！<br>今日還剩 ${gameState.spinsRemaining} 次機會。`, "error");
@@ -358,12 +409,9 @@
     function logToGoogleSheets(isWin, prize, remark) {
       const scriptURL = 'https://script.google.com/macros/s/AKfycbxK-3VOJ85yxbpQF5o-CSWaJo5HJtt3VruP8SiK8UFWBufLOfzySeoJ1nTyf9Coe2CgoQ/exec';
       const data = {
-        numberCode: gameState.playerInfo.numberCode,
-        nameTail: gameState.playerInfo.nameTail,
-        isWin: isWin, ip: gameState.ipAddress,
-        prize: prize, remark: remark
+        numberCode: gameState.playerInfo.numberCode, nameTail: gameState.playerInfo.nameTail,
+        isWin: isWin, ip: gameState.ipAddress, prize: prize, remark: remark
       };
-      
       fetch(scriptURL, {
         method: 'POST', mode: 'no-cors', body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
