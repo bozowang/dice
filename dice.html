@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机 (保底限領版)</title>
+  <title>骰動之間 - 骰子吃角子老虎机 (裝置鎖定版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -66,26 +66,18 @@
     .loading { background: linear-gradient(135deg, #ffd200, #f7971e); color: var(--text-dark); }
     .result-icon { font-size: 2.5rem; margin-bottom: 10px; }
     .instructions ul { list-style: none; padding-left: 0; }
-    .instructions li { margin-bottom: 12px; }
+    .instructions li { margin-bottom: 12px; line-height: 1.5; }
 
     @keyframes spin-x { from { transform: rotateX(0deg); } to { transform: rotateX(3600deg); } }
     @keyframes spin-y { from { transform: rotateY(0deg); } to { transform: rotateY(3600deg); } }
     @keyframes spin-z { from { transform: rotateZ(0deg); } to { transform: rotateZ(3600deg); } }
     @keyframes spin-xy { from { transform: rotateX(0deg) rotateY(0deg); } to { transform: rotateX(3600deg) rotateY(3600deg); } }
-    @keyframes spin-x-rev { from { transform: rotateX(3600deg); } to { transform: rotateX(0deg); } }
-    @keyframes spin-y-rev { from { transform: rotateY(3600deg); } to { transform: rotateY(0deg); } }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
     
     .reel.is-spinning { animation-duration: 9.5s; animation-timing-function: ease-in-out; animation-fill-mode: forwards; }
-    .spin-x { animation-name: spin-x; } .spin-y { animation-name: spin-y; } .spin-z { animation-name: spin-z; }
-    .spin-xy { animation-name: spin-xy; } .spin-x-rev { animation-name: spin-x-rev; } .spin-y-rev { animation-name: spin-y-rev; }
+    .spin-x { animation-name: spin-x; } .spin-y { animation-name: spin-y; } .spin-z { animation-name: spin-z; } .spin-xy { animation-name: spin-xy; }
     
-    #countdown-timer {
-        font-size: 1.5rem;
-        font-weight: bold;
-        color: var(--text-dark);
-        margin-top: 10px;
-    }
+    #countdown-timer { font-size: 1.5rem; font-weight: bold; color: var(--text-dark); margin-top: 10px; }
 
     @media (max-width: 768px) { :root{--dice-size:80px;} .reel{font-size:3.5rem;} }
     @media (max-width: 480px) { :root{--dice-size:70px;} .reel{font-size:3rem;} h1{font-size:1.8rem;} }
@@ -95,7 +87,7 @@
   <div class="container">
     <div class="header">
       <h1>骰動之間 - 骰子挑戰</h1>
-      <div class="subtitle">連續6次未中獎，第7次保證中大獎！</div>
+      <div class="subtitle">每回合三次機會，中獎即結束！</div>
     </div>
     
     <div class="form-section" id="formSection">
@@ -107,7 +99,7 @@
         <label for="numberCode">數字三碼</label>
         <input id="numberCode" type="text" maxlength="3" placeholder="000" autocomplete="off" inputmode="numeric" />
       </div>
-      <button id="verifyBtn">驗證身份</button>
+      <button id="verifyBtn">註冊並開始遊戲</button>
     </div>
     
     <div class="slot-machine" id="slotMachine">
@@ -115,7 +107,7 @@
         <div class="reel">⚀</div> <div class="reel">⚁</div> <div class="reel">⚂</div>
         <div class="reel">⚃</div> <div class="reel">⚄</div> <div class="reel">⚅</div>
       </div>
-      <button id="spinBtn">擲骰子</button>
+      <button id="spinBtn">擲骰子 (剩餘 3 次)</button>
     </div>
     
     <div id="result"></div>
@@ -123,11 +115,12 @@
     <div class="instructions" style="margin-top:25px;">
       <h3 style="text-align:center;">遊戲規則</h3>
       <ul>
-        <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者領獎時，需出示與註冊姓名末兩字相符之**合法證件正本**，不符者視同無效。</li>
-        <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六個骰子點數相同即中獎 (波士頓花生奶油堡)。</li>
-        <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 同一玩家連續6次未中獎，第7次必中大獎 (免費吃到堡)。</li>
-        <!-- --- 修改處：新增保底限領規則 --- -->
-        <li><i class="fas fa-exclamation-circle"></i> <strong>特別注意：</strong> 保底大獎 (免費吃到堡) **每位玩家限領一次**。</li>
+        <li><i class="fas fa-desktop"></i> <strong>裝置綁定：</strong> 每個裝置 (手機/電腦) 僅能註冊一組帳號。</li>
+        <li><i class="fas fa-gamepad"></i> <strong>回合制：</strong> 每次登入可獲得 **3 次** 擲骰機會，**中獎後回合立即結束**。</li>
+        <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者需出示與註冊姓名相符之**合法證件**領獎。</li>
+        <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六骰相同即中「波士頓花生奶油堡」。</li>
+        <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 跨回合**連續 6 次未中獎**，第 7 次必中「免費吃到堡」。</li>
+        <li><i class="fas fa-exclamation-circle"></i> <strong>保底限領：</strong> 「免費吃到堡」大獎每位玩家限領一次。</li>
       </ul>
     </div>
   </div>
@@ -136,11 +129,12 @@
     const gameState = {
       isVerified: false, isSpinning: false,
       playerInfo: {}, ipAddress: '載入中...',
-      playerData: {}, playerKey: '' // playerData 將從 localStorage 讀取
+      playerData: {}, playerKey: '',
+      spinsRemaining: 3 // --- 新增：每回合剩餘次數 ---
     };
     
     const symbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-    const spinAnimations = ['spin-x', 'spin-y', 'spin-z', 'spin-xy', 'spin-x-rev', 'spin-y-rev'];
+    const spinAnimations = ['spin-x', 'spin-y', 'spin-z', 'spin-xy'];
     let countdownInterval = null;
 
     const reels = document.querySelectorAll('.reel');
@@ -153,6 +147,8 @@
     const formSection = document.getElementById('formSection');
     
     function initGame() {
+      // --- 修改處：啟動時檢查裝置是否已鎖定 ---
+      checkDeviceLock();
       verifyBtn.addEventListener('click', verifyPlayer);
       spinBtn.addEventListener('click', spinReels);
       numberCodeInput.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
@@ -165,6 +161,34 @@
         gameState.ipAddress = (await response.json()).ip;
       } catch (error) { gameState.ipAddress = '無法取得'; }
     }
+
+    // --- 新增：檢查裝置鎖定狀態的函數 ---
+    function checkDeviceLock() {
+        const lockedPlayerKey = localStorage.getItem('dice_device_locked_player_key');
+        if (lockedPlayerKey) {
+            // 如果裝置已鎖定，直接自動登入
+            autoLoginPlayer(lockedPlayerKey);
+        }
+    }
+
+    // --- 新增：自動登入已鎖定裝置的玩家 ---
+    function autoLoginPlayer(playerKey) {
+        formSection.style.display = 'none';
+        const name = playerKey.split('_')[3];
+        const code = playerKey.split('_')[4];
+        
+        gameState.isVerified = true;
+        gameState.playerInfo = { nameTail: name, numberCode: code };
+        gameState.playerKey = playerKey;
+        gameState.playerData = JSON.parse(localStorage.getItem(playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false };
+        gameState.spinsRemaining = 3;
+        
+        slotMachine.style.display = 'block';
+        spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
+        spinBtn.disabled = false;
+        
+        showResult(`<div class="result-icon">👍</div>歡迎回來, ${name}！<br>您有 3 次擲骰機會。`, "success");
+    }
     
     function verifyPlayer() {
       const nameTail = nameTailInput.value.trim().toUpperCase();
@@ -172,33 +196,21 @@
       
       if (!nameTail || nameTail.length !== 2) return alert("請輸入與證件相符的姓名末兩字");
       if (!numberCode || numberCode.length !== 3) return alert("請輸入完整數字三碼");
-      
-      gameState.isVerified = true;
-      gameState.playerInfo = { nameTail, numberCode };
-      
-      gameState.playerKey = `dice_player_v2_${nameTail}_${numberCode}`;
-      // --- 修改處：初始化玩家數據，增加 hasClaimedGuaranteedPrize 屬性 ---
-      gameState.playerData = JSON.parse(localStorage.getItem(gameState.playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false };
-      
-      formSection.style.display = 'none';
-      slotMachine.style.display = 'block';
-      
-      let message;
-      // --- 修改處：根據是否已領獎來顯示不同訊息 ---
-      if (gameState.playerData.hasClaimedGuaranteedPrize) {
-        message = `歡迎回來！您已領取過保底大獎，<br>祝您幸運中獎！`;
-      } else {
-        const playCount = gameState.playerData.playCount;
-        const remaining = 6 - playCount;
-        message = playCount < 6 
-          ? `歡迎回來！您已遊玩 ${playCount} 次。<br>再 ${remaining} 次未中獎即可獲得保底獎勵！`
-          : `歡迎回來！您已遊玩 ${playCount} 次。<br><b>本次為保底獎勵局！</b>`;
+
+      // --- 新增：裝置鎖定邏輯 ---
+      if (localStorage.getItem('dice_device_locked_player_key')) {
+          alert("此裝置已被註冊，無法建立新帳號。");
+          return;
       }
-      showResult(`<div class="result-icon">✅</div>${message}`, "success");
+      
+      const newPlayerKey = `dice_player_v2_${nameTail}_${numberCode}`;
+      localStorage.setItem('dice_device_locked_player_key', newPlayerKey);
+      
+      autoLoginPlayer(newPlayerKey);
     }
     
     function spinReels() {
-      if (!gameState.isVerified || gameState.isSpinning) return;
+      if (!gameState.isVerified || gameState.isSpinning || gameState.spinsRemaining <= 0) return;
       
       gameState.isSpinning = true;
       spinBtn.disabled = true;
@@ -214,7 +226,6 @@
       }, 1000);
 
       gameState.playerData.playCount++;
-      // --- 修改處：保底判斷需額外檢查是否已領獎 ---
       const isGuaranteedWin = gameState.playerData.playCount >= 7 && !gameState.playerData.hasClaimedGuaranteedPrize;
       const isLuckyWin = Math.random() < 0.02;
       const isWin = isGuaranteedWin || isLuckyWin;
@@ -231,14 +242,14 @@
 
       const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
       
-      reels.forEach((reel, index) => {
+      reels.forEach((reel) => {
         reel.className = 'reel';
         void reel.offsetWidth;
         reel.className = `reel is-spinning ${spinAnimations[Math.floor(Math.random() * spinAnimations.length)]}`;
         
         setTimeout(() => {
           reel.textContent = isWin ? winSymbol : symbols[Math.floor(Math.random() * symbols.length)];
-        }, 9500 + index * 50);
+        }, 9500);
       });
 
       setTimeout(() => checkResult(isWin, prize, remark), 10000);
@@ -247,46 +258,46 @@
     function checkResult(isWin, prize, remark) {
       clearInterval(countdownInterval);
       logToGoogleSheets(isWin, prize, remark);
+      
+      gameState.spinsRemaining--;
 
       if (isWin) {
-        showResult(`<div class="result-icon">🎉</div>恭喜中獎！<br>您贏得<b>${prize}</b>一份！<br>(${remark})`, "jackpot");
+        showResult(`<div class="result-icon">🎉</div>恭喜中獎！<br>您贏得<b>${prize}</b>一份！<br>(${remark})<br><br>本回合結束。`, "jackpot");
         confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
-        // --- 修改處：如果中了保底獎，就標記為已領取 ---
         if (remark === "第7次保底獎勵") {
             gameState.playerData.hasClaimedGuaranteedPrize = true;
         }
-        gameState.playerData.playCount = 0; // 中任何獎都重置計數器
+        gameState.playerData.playCount = 0; // 中獎後連續未中獎次數歸零
+        endGameSession();
       } else {
-        let message;
-        // --- 修改處：未中獎時也根據領獎狀態顯示不同訊息 ---
-        if (gameState.playerData.hasClaimedGuaranteedPrize) {
-            message = `未中獎，祝您下次幸運中獎！`;
+        localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData)); // 只在未中獎時保存進度
+        if(gameState.spinsRemaining > 0) {
+            showResult(`<div class="result-icon">🎲</div>未中獎，再接再厲！<br>本回合還剩 ${gameState.spinsRemaining} 次機會。`, "error");
+            gameState.isSpinning = false;
+            spinBtn.disabled = false;
+            spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
         } else {
-            const remaining = 6 - gameState.playerData.playCount;
-            message = `未中獎，再接再厲！<br>還差 ${remaining} 次即可獲得保底獎勵。`;
+            showResult(`<div class="result-icon">😥</div>本回合 3 次機會已用完，<br>請重新整理頁面開始新回合！`, "error");
+            endGameSession();
         }
-        showResult(`<div class="result-icon">🎲</div>${message}`, "error");
       }
-      
-      localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
-      
-      gameState.isSpinning = false;
-      spinBtn.disabled = false;
+    }
+
+    function endGameSession() {
+        localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData)); // 最終保存一次數據
+        spinBtn.disabled = true;
+        spinBtn.textContent = "本回合已結束";
+        gameState.isSpinning = false;
     }
     
     function logToGoogleSheets(isWin, prize, remark) {
-      // ***** 使用您最新的部署網址 *****
       const scriptURL = 'https://script.google.com/macros/s/AKfycbxHb4n6DHp71vAIiFU05Xy2DTajZy9h4hqUl2qTL3QKaT7eah66HxMXMzPoYkcay6WH-w/exec';
-      
       const data = {
         numberCode: gameState.playerInfo.numberCode,
         nameTail: gameState.playerInfo.nameTail,
-        isWin: isWin,
-        ip: gameState.ipAddress,
-        prize: prize,
-        remark: remark
+        isWin: isWin, ip: gameState.ipAddress,
+        prize: prize, remark: remark
       };
-
       fetch(scriptURL, {
         method: 'POST', mode: 'no-cors', body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
