@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机 (裝置鎖定版)</title>
+  <title>骰動之間 - 骰子吃角子老虎机 (每日限定版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -78,6 +78,7 @@
     .spin-x { animation-name: spin-x; } .spin-y { animation-name: spin-y; } .spin-z { animation-name: spin-z; } .spin-xy { animation-name: spin-xy; }
     
     #countdown-timer { font-size: 1.5rem; font-weight: bold; color: var(--text-dark); margin-top: 10px; }
+    #daily-countdown { font-size: 1.3rem; font-weight: bold; }
 
     @media (max-width: 768px) { :root{--dice-size:80px;} .reel{font-size:3.5rem;} }
     @media (max-width: 480px) { :root{--dice-size:70px;} .reel{font-size:3rem;} h1{font-size:1.8rem;} }
@@ -87,7 +88,7 @@
   <div class="container">
     <div class="header">
       <h1>骰動之間 - 骰子挑戰</h1>
-      <div class="subtitle">每回合三次機會，中獎即結束！</div>
+      <div class="subtitle">每日一回合 (3次機會)，中獎即結束！</div>
     </div>
     
     <div class="form-section" id="formSection">
@@ -115,8 +116,8 @@
     <div class="instructions" style="margin-top:25px;">
       <h3 style="text-align:center;">遊戲規則</h3>
       <ul>
-        <li><i class="fas fa-desktop"></i> <strong>裝置綁定：</strong> 每個裝置 (手機/電腦) 僅能註冊一組帳號。</li>
-        <li><i class="fas fa-gamepad"></i> <strong>回合制：</strong> 每次登入可獲得 **3 次** 擲骰機會，**中獎後回合立即結束**。</li>
+        <li><i class="fas fa-calendar-day"></i> <strong>每日限定：</strong> 每個帳號每天僅限遊玩一個回合 (3次機會)。</li>
+        <li><i class="fas fa-desktop"></i> <strong>裝置綁定：</strong> 每個裝置僅能註冊一組帳號。</li>
         <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者需出示與註冊姓名相符之**合法證件**領獎。</li>
         <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六骰相同即中「波士頓花生奶油堡」。</li>
         <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 跨回合**連續 6 次未中獎**，第 7 次必中「免費吃到堡」。</li>
@@ -130,12 +131,13 @@
       isVerified: false, isSpinning: false,
       playerInfo: {}, ipAddress: '載入中...',
       playerData: {}, playerKey: '',
-      spinsRemaining: 3 // --- 新增：每回合剩餘次數 ---
+      spinsRemaining: 3
     };
     
     const symbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
     const spinAnimations = ['spin-x', 'spin-y', 'spin-z', 'spin-xy'];
     let countdownInterval = null;
+    let dailyLockInterval = null;
 
     const reels = document.querySelectorAll('.reel');
     const spinBtn = document.getElementById('spinBtn');
@@ -147,7 +149,6 @@
     const formSection = document.getElementById('formSection');
     
     function initGame() {
-      // --- 修改處：啟動時檢查裝置是否已鎖定 ---
       checkDeviceLock();
       verifyBtn.addEventListener('click', verifyPlayer);
       spinBtn.addEventListener('click', spinReels);
@@ -162,16 +163,13 @@
       } catch (error) { gameState.ipAddress = '無法取得'; }
     }
 
-    // --- 新增：檢查裝置鎖定狀態的函數 ---
     function checkDeviceLock() {
         const lockedPlayerKey = localStorage.getItem('dice_device_locked_player_key');
         if (lockedPlayerKey) {
-            // 如果裝置已鎖定，直接自動登入
             autoLoginPlayer(lockedPlayerKey);
         }
     }
 
-    // --- 新增：自動登入已鎖定裝置的玩家 ---
     function autoLoginPlayer(playerKey) {
         formSection.style.display = 'none';
         const name = playerKey.split('_')[3];
@@ -180,14 +178,39 @@
         gameState.isVerified = true;
         gameState.playerInfo = { nameTail: name, numberCode: code };
         gameState.playerKey = playerKey;
-        gameState.playerData = JSON.parse(localStorage.getItem(playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false };
-        gameState.spinsRemaining = 3;
+        gameState.playerData = JSON.parse(localStorage.getItem(playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false, lastPlayDate: '' };
         
+        // --- 修改處：每日限制核心邏輯 ---
+        const today = new Date().toISOString().split('T')[0];
+        if(gameState.playerData.lastPlayDate === today) {
+            // 如果今天已經玩過，則顯示倒數計時
+            showDailyLockScreen();
+            return;
+        }
+
+        gameState.spinsRemaining = 3;
         slotMachine.style.display = 'block';
         spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
         spinBtn.disabled = false;
         
-        showResult(`<div class="result-icon">👍</div>歡迎回來, ${name}！<br>您有 3 次擲骰機會。`, "success");
+        showResult(`<div class="result-icon">👍</div>歡迎回來, ${name}！<br>您今天有 3 次擲骰機會。`, "success");
+    }
+
+    // --- 新增：顯示每日鎖定畫面的函數 ---
+    function showDailyLockScreen() {
+        if(dailyLockInterval) clearInterval(dailyLockInterval);
+        slotMachine.style.display = 'none';
+        const updateCountdown = () => {
+            const now = new Date();
+            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+            const diff = tomorrow - now;
+            const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
+            const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
+            const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
+            showResult(`<div class="result-icon">⏳</div>您今日的回合已結束！<br>請明天再來挑戰。<br>下次開放倒數：<div id="daily-countdown">${h}:${m}:${s}</div>`, "error");
+        };
+        updateCountdown();
+        dailyLockInterval = setInterval(updateCountdown, 1000);
     }
     
     function verifyPlayer() {
@@ -197,7 +220,6 @@
       if (!nameTail || nameTail.length !== 2) return alert("請輸入與證件相符的姓名末兩字");
       if (!numberCode || numberCode.length !== 3) return alert("請輸入完整數字三碼");
 
-      // --- 新增：裝置鎖定邏輯 ---
       if (localStorage.getItem('dice_device_locked_player_key')) {
           alert("此裝置已被註冊，無法建立新帳號。");
           return;
@@ -262,31 +284,32 @@
       gameState.spinsRemaining--;
 
       if (isWin) {
-        showResult(`<div class="result-icon">🎉</div>恭喜中獎！<br>您贏得<b>${prize}</b>一份！<br>(${remark})<br><br>本回合結束。`, "jackpot");
+        showResult(`<div class="result-icon">🎉</div>恭喜中獎！<br>您贏得<b>${prize}</b>一份！<br>(${remark})<br><br>今日回合結束。`, "jackpot");
         confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
         if (remark === "第7次保底獎勵") {
             gameState.playerData.hasClaimedGuaranteedPrize = true;
         }
-        gameState.playerData.playCount = 0; // 中獎後連續未中獎次數歸零
+        gameState.playerData.playCount = 0;
         endGameSession();
       } else {
-        localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData)); // 只在未中獎時保存進度
+        localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
         if(gameState.spinsRemaining > 0) {
-            showResult(`<div class="result-icon">🎲</div>未中獎，再接再厲！<br>本回合還剩 ${gameState.spinsRemaining} 次機會。`, "error");
+            showResult(`<div class="result-icon">🎲</div>未中獎，再接再厲！<br>今日還剩 ${gameState.spinsRemaining} 次機會。`, "error");
             gameState.isSpinning = false;
             spinBtn.disabled = false;
             spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
         } else {
-            showResult(`<div class="result-icon">😥</div>本回合 3 次機會已用完，<br>請重新整理頁面開始新回合！`, "error");
+            showResult(`<div class="result-icon">😥</div>今日 3 次機會已用完，<br>請明天再來挑戰！`, "error");
             endGameSession();
         }
       }
     }
 
     function endGameSession() {
-        localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData)); // 最終保存一次數據
+        gameState.playerData.lastPlayDate = new Date().toISOString().split('T')[0]; // --- 修改處：記錄今天的遊玩日期 ---
+        localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
         spinBtn.disabled = true;
-        spinBtn.textContent = "本回合已結束";
+        spinBtn.textContent = "今日回合已結束";
         gameState.isSpinning = false;
     }
     
