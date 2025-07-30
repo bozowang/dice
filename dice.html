@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机 (保底+驗證版)</title>
+  <title>骰動之間 - 骰子吃角子老虎机 (保底限領版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -80,7 +80,6 @@
     .spin-x { animation-name: spin-x; } .spin-y { animation-name: spin-y; } .spin-z { animation-name: spin-z; }
     .spin-xy { animation-name: spin-xy; } .spin-x-rev { animation-name: spin-x-rev; } .spin-y-rev { animation-name: spin-y-rev; }
     
-    /* --- 新增：倒數計時文字樣式 --- */
     #countdown-timer {
         font-size: 1.5rem;
         font-weight: bold;
@@ -124,11 +123,11 @@
     <div class="instructions" style="margin-top:25px;">
       <h3 style="text-align:center;">遊戲規則</h3>
       <ul>
-        <!-- --- 修改處：新增身份驗證規則 --- -->
         <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者領獎時，需出示與註冊姓名末兩字相符之**合法證件正本**，不符者視同無效。</li>
         <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六個骰子點數相同即中獎 (波士頓花生奶油堡)。</li>
-        <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 同一玩家連續6次未中獎，第7次必中大獎 (免費吃到堡)！</li>
-        <li><i class="fas fa-clipboard-check"></i> <strong>自動記錄：</strong> 所有遊戲結果都會自動記錄。</li>
+        <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 同一玩家連續6次未中獎，第7次必中大獎 (免費吃到堡)。</li>
+        <!-- --- 修改處：新增保底限領規則 --- -->
+        <li><i class="fas fa-exclamation-circle"></i> <strong>特別注意：</strong> 保底大獎 (免費吃到堡) **每位玩家限領一次**。</li>
       </ul>
     </div>
   </div>
@@ -137,12 +136,12 @@
     const gameState = {
       isVerified: false, isSpinning: false,
       playerInfo: {}, ipAddress: '載入中...',
-      playerData: { playCount: 0 }, playerKey: ''
+      playerData: {}, playerKey: '' // playerData 將從 localStorage 讀取
     };
     
     const symbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
     const spinAnimations = ['spin-x', 'spin-y', 'spin-z', 'spin-xy', 'spin-x-rev', 'spin-y-rev'];
-    let countdownInterval = null; // --- 新增：用於存放倒數計時器 ---
+    let countdownInterval = null;
 
     const reels = document.querySelectorAll('.reel');
     const spinBtn = document.getElementById('spinBtn');
@@ -177,17 +176,24 @@
       gameState.isVerified = true;
       gameState.playerInfo = { nameTail, numberCode };
       
-      gameState.playerKey = `dice_player_${nameTail}_${numberCode}`;
-      gameState.playerData = JSON.parse(localStorage.getItem(gameState.playerKey)) || { playCount: 0 };
+      gameState.playerKey = `dice_player_v2_${nameTail}_${numberCode}`;
+      // --- 修改處：初始化玩家數據，增加 hasClaimedGuaranteedPrize 屬性 ---
+      gameState.playerData = JSON.parse(localStorage.getItem(gameState.playerKey)) || { playCount: 0, hasClaimedGuaranteedPrize: false };
       
       formSection.style.display = 'none';
       slotMachine.style.display = 'block';
       
-      const playCount = gameState.playerData.playCount;
-      const remaining = 6 - playCount;
-      const message = playCount < 6 
-        ? `歡迎回來！您已遊玩 ${playCount} 次。<br>再 ${remaining} 次未中獎即可獲得保底獎勵！`
-        : `歡迎回來！您已遊玩 ${playCount} 次。<br><b>本次為保底獎勵局！</b>`;
+      let message;
+      // --- 修改處：根據是否已領獎來顯示不同訊息 ---
+      if (gameState.playerData.hasClaimedGuaranteedPrize) {
+        message = `歡迎回來！您已領取過保底大獎，<br>祝您幸運中獎！`;
+      } else {
+        const playCount = gameState.playerData.playCount;
+        const remaining = 6 - playCount;
+        message = playCount < 6 
+          ? `歡迎回來！您已遊玩 ${playCount} 次。<br>再 ${remaining} 次未中獎即可獲得保底獎勵！`
+          : `歡迎回來！您已遊玩 ${playCount} 次。<br><b>本次為保底獎勵局！</b>`;
+      }
       showResult(`<div class="result-icon">✅</div>${message}`, "success");
     }
     
@@ -197,21 +203,19 @@
       gameState.isSpinning = true;
       spinBtn.disabled = true;
 
-      // --- 修改處：啟動倒數計時 ---
-      if (countdownInterval) clearInterval(countdownInterval); // 清除舊的計時器
+      if (countdownInterval) clearInterval(countdownInterval);
       let countdown = 10;
       showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中...<div id="countdown-timer">${countdown}</div>`, "loading");
       countdownInterval = setInterval(() => {
         countdown--;
         const timerEl = document.getElementById('countdown-timer');
-        if (timerEl) timerEl.textContent = countdown;
-        if (countdown <= 0) {
-            clearInterval(countdownInterval);
-        }
+        if (timerEl) timerEl.textContent = countdown > 0 ? countdown : 0;
+        if (countdown <= 0) clearInterval(countdownInterval);
       }, 1000);
 
       gameState.playerData.playCount++;
-      const isGuaranteedWin = gameState.playerData.playCount >= 7;
+      // --- 修改處：保底判斷需額外檢查是否已領獎 ---
+      const isGuaranteedWin = gameState.playerData.playCount >= 7 && !gameState.playerData.hasClaimedGuaranteedPrize;
       const isLuckyWin = Math.random() < 0.02;
       const isWin = isGuaranteedWin || isLuckyWin;
       
@@ -241,16 +245,27 @@
     }
     
     function checkResult(isWin, prize, remark) {
-      clearInterval(countdownInterval); // 確保計時器已停止
+      clearInterval(countdownInterval);
       logToGoogleSheets(isWin, prize, remark);
 
       if (isWin) {
         showResult(`<div class="result-icon">🎉</div>恭喜中獎！<br>您贏得<b>${prize}</b>一份！<br>(${remark})`, "jackpot");
         confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
-        gameState.playerData.playCount = 0;
+        // --- 修改處：如果中了保底獎，就標記為已領取 ---
+        if (remark === "第7次保底獎勵") {
+            gameState.playerData.hasClaimedGuaranteedPrize = true;
+        }
+        gameState.playerData.playCount = 0; // 中任何獎都重置計數器
       } else {
-        const remaining = 6 - gameState.playerData.playCount;
-        showResult(`<div class="result-icon">🎲</div>未中獎，再接再厲！<br>還差 ${remaining} 次即可獲得保底獎勵。`, "error");
+        let message;
+        // --- 修改處：未中獎時也根據領獎狀態顯示不同訊息 ---
+        if (gameState.playerData.hasClaimedGuaranteedPrize) {
+            message = `未中獎，祝您下次幸運中獎！`;
+        } else {
+            const remaining = 6 - gameState.playerData.playCount;
+            message = `未中獎，再接再厲！<br>還差 ${remaining} 次即可獲得保底獎勵。`;
+        }
+        showResult(`<div class="result-icon">🎲</div>${message}`, "error");
       }
       
       localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
