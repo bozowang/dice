@@ -79,7 +79,7 @@
     .error { background: linear-gradient(135deg, #ff9800, #ff5722); }
     .loading { background: linear-gradient(135deg, #ffd200, #f7971e); color: var(--text-dark); }
     .result-icon { font-size: 2.5rem; margin-bottom: 10px; }
-    .symbols-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 20px 0; text-align: center; }
+    .symbols-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 20px 0; text-align: center; transition: opacity 0.5s, height 0.5s; }
     .symbol-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; font-size: 2.5rem; }
     .symbol-label { font-size: 1rem; margin-top: 8px; font-weight: bold; color: #FFD700; }
     .instructions { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; margin-top: 25px; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.15); }
@@ -90,6 +90,19 @@
     @keyframes spin { 0% { transform: rotateX(0); } 100% { transform: rotateX(360deg); } }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
     .spin { animation: spin 0.8s ease-out; }
+    
+    /* --- 新增樣式：放大結果中的骰子 --- */
+    .result-dice {
+      font-size: 3.6rem; /* 基礎字體 1.2rem 的三倍 */
+      display: inline-block;
+      margin: 0 5px;
+      vertical-align: middle;
+      line-height: 1;
+    }
+    .result-dice-container {
+      margin-top: 10px;
+    }
+    
     @media (max-width: 768px) { .container{padding:20px 15px;} .reel{width:80px;height:80px;font-size:3.5rem;} .symbols-grid{grid-template-columns:repeat(3,1fr);} :root{--dice-size:80px;} }
     @media (max-width: 480px) { .container{padding:15px 10px;} .reel{width:70px;height:70px;font-size:3rem;} h1{font-size:1.8rem;} .symbols-grid{grid-template-columns:repeat(2,1fr);} :root{--dice-size:70px;} }
   </style>
@@ -131,7 +144,8 @@
       <div class="controls"><button id="spinBtn"><i class="fas fa-dice"></i> 擲骰子</button></div>
     </div>
     
-    <div class="symbols-grid">
+    <!-- --- 修改處：給予 ID 方便 JS 控制 --- -->
+    <div class="symbols-grid" id="symbolsGrid">
       <div class="symbol-item">⚀<div class="symbol-label">一點</div></div>
       <div class="symbol-item">⚁<div class="symbol-label">二點</div></div>
       <div class="symbol-item">⚂<div class="symbol-label">三點</div></div>
@@ -160,10 +174,8 @@
   
   <script>
     const gameState = {
-      isVerified: false,
-      isSpinning: false,
-      playerInfo: {},
-      ipAddress: '載入中...'
+      isVerified: false, isSpinning: false,
+      playerInfo: {}, ipAddress: '載入中...'
     };
     
     const symbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
@@ -176,6 +188,8 @@
     const resultDiv = document.getElementById('result');
     const slotMachine = document.getElementById('slotMachine');
     const formSection = document.getElementById('formSection');
+    // --- 新增處：獲取骰子範例區塊的 DOM ---
+    const symbolsGrid = document.getElementById('symbolsGrid');
     
     function initGame() {
       verifyBtn.addEventListener('click', verifyPlayer);
@@ -208,8 +222,11 @@
       setTimeout(() => {
         gameState.isVerified = true;
         gameState.playerInfo = { nameTail, numberCode };
-        formSection.style.display = 'none'; // 隱藏驗證區塊
-        slotMachine.style.display = 'block'; // 顯示遊戲機
+        formSection.style.display = 'none';
+        slotMachine.style.display = 'block';
+        // --- 修改處：驗證成功後，隱藏骰子範例區塊 ---
+        symbolsGrid.style.display = 'none';
+        
         showResult('<div class="result-icon">✅</div>驗證成功！<br>您可以開始無限次挑戰！', "success");
       }, 1000);
     }
@@ -221,7 +238,7 @@
       spinBtn.disabled = true;
       showResult('<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中...', "loading");
       
-      const isWin = Math.random() < 0.02; // 2% 中獎率
+      const isWin = Math.random() < 0.02;
       const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
       
       reels.forEach((reel, index) => {
@@ -243,11 +260,12 @@
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         logToGoogleSheets(true);
       } else {
-        showResult(`<div class="result-icon">🎲</div>本次結果：${results.join(' ')}<br>未中獎，再試一次吧！`, "error");
+        // --- 修改處：產生帶有放大骰子樣式的 HTML ---
+        const diceHTML = results.map(dice => `<span class="result-dice">${dice}</span>`).join('');
+        showResult(`<div class="result-icon">🎲</div>本次結果：<div class="result-dice-container">${diceHTML}</div><br>未中獎，再試一次吧！`, "error");
         logToGoogleSheets(false);
       }
       
-      // *** 修改處：不再禁用遊戲，而是直接讓玩家可以再玩一次 ***
       gameState.isSpinning = false;
       spinBtn.disabled = false;
     }
@@ -255,10 +273,8 @@
     function logToGoogleSheets(isWin) {
       const scriptURL = 'https://script.google.com/macros/s/AKfycbxfp3OkXAS0n-En5_58sTeQwpDpF7xyrv7Pb7VhybR1ZhscOjsvAW_zAAdWX4WDu_hksw/exec';
       const data = {
-        numberCode: gameState.playerInfo.numberCode,
-        nameTail: gameState.playerInfo.nameTail,
-        isWin: isWin,
-        ip: gameState.ipAddress
+        numberCode: gameState.playerInfo.numberCode, nameTail: gameState.playerInfo.nameTail,
+        isWin: isWin, ip: gameState.ipAddress
       };
 
       fetch(scriptURL, {
@@ -271,7 +287,6 @@
     
     function showResult(message, type, forceShow = false) {
       if (resultDiv.classList.contains('show') && !forceShow && !type.includes('loading')) {
-          // 如果結果已經顯示，並且不是新的 loading，則先淡出舊結果
           resultDiv.classList.remove('show');
           setTimeout(() => showResult(message, type, true), 300);
           return;
