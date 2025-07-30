@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机 (保底版)</title>
+  <title>骰動之間 - 骰子吃角子老虎机 (保底+驗證版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
@@ -33,11 +33,6 @@
       -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
     .subtitle { font-size: 1.2rem; opacity: 0.9; margin-top: 5px; font-weight: 600; }
-    .jackpot-banner {
-      background: linear-gradient(45deg, #f44336, #e91e63); padding: 10px; border-radius: 50px;
-      margin: 15px auto; width: 90%; max-width: 500px; text-align: center; font-weight: bold;
-      font-size: 1.3rem; box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4); border: 2px solid gold;
-    }
     .form-section { background: var(--form-bg); border-radius: 15px; padding: 20px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .input-group { margin-bottom: 15px; }
     label { display: block; margin-bottom: 5px; font-weight: 600; }
@@ -84,6 +79,14 @@
     .reel.is-spinning { animation-duration: 9.5s; animation-timing-function: ease-in-out; animation-fill-mode: forwards; }
     .spin-x { animation-name: spin-x; } .spin-y { animation-name: spin-y; } .spin-z { animation-name: spin-z; }
     .spin-xy { animation-name: spin-xy; } .spin-x-rev { animation-name: spin-x-rev; } .spin-y-rev { animation-name: spin-y-rev; }
+    
+    /* --- 新增：倒數計時文字樣式 --- */
+    #countdown-timer {
+        font-size: 1.5rem;
+        font-weight: bold;
+        color: var(--text-dark);
+        margin-top: 10px;
+    }
 
     @media (max-width: 768px) { :root{--dice-size:80px;} .reel{font-size:3.5rem;} }
     @media (max-width: 480px) { :root{--dice-size:70px;} .reel{font-size:3rem;} h1{font-size:1.8rem;} }
@@ -98,7 +101,7 @@
     
     <div class="form-section" id="formSection">
       <div class="input-group">
-        <label for="nameTail">姓名末兩字</label>
+        <label for="nameTail">姓名末兩字 (需與證件相符)</label>
         <input id="nameTail" type="text" maxlength="2" placeholder="例如：小明" autocomplete="off" />
       </div>
       <div class="input-group">
@@ -121,10 +124,11 @@
     <div class="instructions" style="margin-top:25px;">
       <h3 style="text-align:center;">遊戲規則</h3>
       <ul>
-        <li><i class="fas fa-user-check"></i> 輸入資訊後即可無限次遊玩。</li>
-        <li><i class="fas fa-dice"></i> 六個骰子點數相同即為幸運中獎 (波士頓花生奶油堡)。</li>
-        <li><i class="fas fa-star"></i> <b>保底機制：</b>同一玩家連續6次未中獎，第7次必中大獎 (免費吃到堡)！</li>
-        <li><i class="fas fa-clipboard-check"></i> 所有結果都會自動記錄。</li>
+        <!-- --- 修改處：新增身份驗證規則 --- -->
+        <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者領獎時，需出示與註冊姓名末兩字相符之**合法證件正本**，不符者視同無效。</li>
+        <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六個骰子點數相同即中獎 (波士頓花生奶油堡)。</li>
+        <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 同一玩家連續6次未中獎，第7次必中大獎 (免費吃到堡)！</li>
+        <li><i class="fas fa-clipboard-check"></i> <strong>自動記錄：</strong> 所有遊戲結果都會自動記錄。</li>
       </ul>
     </div>
   </div>
@@ -138,7 +142,8 @@
     
     const symbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
     const spinAnimations = ['spin-x', 'spin-y', 'spin-z', 'spin-xy', 'spin-x-rev', 'spin-y-rev'];
-    
+    let countdownInterval = null; // --- 新增：用於存放倒數計時器 ---
+
     const reels = document.querySelectorAll('.reel');
     const spinBtn = document.getElementById('spinBtn');
     const verifyBtn = document.getElementById('verifyBtn');
@@ -166,7 +171,7 @@
       const nameTail = nameTailInput.value.trim().toUpperCase();
       const numberCode = numberCodeInput.value.trim();
       
-      if (!nameTail || nameTail.length !== 2) return alert("請輸入完整姓名末兩字");
+      if (!nameTail || nameTail.length !== 2) return alert("請輸入與證件相符的姓名末兩字");
       if (!numberCode || numberCode.length !== 3) return alert("請輸入完整數字三碼");
       
       gameState.isVerified = true;
@@ -191,8 +196,20 @@
       
       gameState.isSpinning = true;
       spinBtn.disabled = true;
-      showResult('<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中... 請稍候約10秒', "loading");
-      
+
+      // --- 修改處：啟動倒數計時 ---
+      if (countdownInterval) clearInterval(countdownInterval); // 清除舊的計時器
+      let countdown = 10;
+      showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中...<div id="countdown-timer">${countdown}</div>`, "loading");
+      countdownInterval = setInterval(() => {
+        countdown--;
+        const timerEl = document.getElementById('countdown-timer');
+        if (timerEl) timerEl.textContent = countdown;
+        if (countdown <= 0) {
+            clearInterval(countdownInterval);
+        }
+      }, 1000);
+
       gameState.playerData.playCount++;
       const isGuaranteedWin = gameState.playerData.playCount >= 7;
       const isLuckyWin = Math.random() < 0.02;
@@ -224,6 +241,7 @@
     }
     
     function checkResult(isWin, prize, remark) {
+      clearInterval(countdownInterval); // 確保計時器已停止
       logToGoogleSheets(isWin, prize, remark);
 
       if (isWin) {
@@ -242,7 +260,7 @@
     }
     
     function logToGoogleSheets(isWin, prize, remark) {
-      // ***** 這裏是本次最重要的修改 *****
+      // ***** 使用您最新的部署網址 *****
       const scriptURL = 'https://script.google.com/macros/s/AKfycbxHb4n6DHp71vAIiFU05Xy2DTajZy9h4hqUl2qTL3QKaT7eah66HxMXMzPoYkcay6WH-w/exec';
       
       const data = {
@@ -264,12 +282,11 @@
     
     function showResult(message, type) {
       resultDiv.classList.remove('show');
-      //
       setTimeout(() => {
           resultDiv.innerHTML = message;
           resultDiv.className = `result ${type}`;
           resultDiv.classList.add('show');
-      }, 300);
+      }, 200);
     }
     
     window.addEventListener('DOMContentLoaded', initGame);
