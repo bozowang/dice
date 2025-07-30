@@ -3,190 +3,95 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机</title>
+  <title>骰動之間 - 骰子吃角子老虎机 (無限制版)</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
   <style>
     :root {
-      --primary: #6a11cb;
-      --secondary: #2575fc;
-      --success: #00b09b;
-      --jackpot: #ff416c;
-      --bg-gradient: linear-gradient(45deg, #1a2980, #26d0ce);
-      --slot-bg: #2c3e50;
-      --reel-bg: #1a1a2e;
-      --form-bg: rgba(255, 255, 255, 0.1);
-      --shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
-      --text-light: #ffffff;
-      --text-dark: #333333;
-      --dice-size: 100px;
+      --primary: #6a11cb; --secondary: #2575fc; --success: #00b09b; --jackpot: #ff416c;
+      --bg-gradient: linear-gradient(45deg, #1a2980, #26d0ce); --slot-bg: #2c3e50;
+      --reel-bg: #1a1a2e; --form-bg: rgba(255, 255, 255, 0.1); --shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+      --text-light: #ffffff; --text-dark: #333333; --dice-size: 100px;
     }
-    
     * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    
     body {
-      font-family: 'Segoe UI', 'Microsoft JhengHei', -apple-system, BlinkMacSystemFont, sans-serif;
-      padding: 20px 15px;
-      min-height: 100vh;
-      color: var(--text-light);
-      background: var(--bg-gradient);
-      background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      line-height: 1.6;
+      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; padding: 20px 15px; min-height: 100vh;
+      color: var(--text-light); background: var(--bg-gradient); background-size: 400% 400%;
+      animation: gradientBG 15s ease infinite; display: flex; flex-direction: column;
+      justify-content: center; align-items: center; line-height: 1.6;
     }
-    
-    @keyframes gradientBG {
-      0% { background-position: 0% 50%; }
-      50% { background-position: 100% 50%; }
-      100% { background-position: 0% 50%; }
-    }
-    
+    @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
     .container {
-      width: 100%;
-      max-width: 800px;
-      background: rgba(0, 0, 0, 0.25);
-      padding: 25px;
-      border-radius: 20px;
-      backdrop-filter: blur(10px);
-      box-shadow: var(--shadow);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      margin: 20px auto;
+      width: 100%; max-width: 800px; background: rgba(0, 0, 0, 0.25); padding: 25px;
+      border-radius: 20px; backdrop-filter: blur(10px); box-shadow: var(--shadow);
+      border: 1px solid rgba(255, 255, 255, 0.2); margin: 20px auto;
     }
-    
     .header { text-align: center; margin-bottom: 25px; }
     .title-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
     .title-icon { font-size: 2.5rem; animation: bounce 2s infinite; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3)); }
     @keyframes bounce { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-    
     h1 {
-      font-size: 2.2rem;
-      margin-bottom: 5px;
-      text-shadow: 2px 2px 6px rgba(0, 0, 0, 0.4);
-      color: #FFEA00;
-      line-height: 1.3;
-      background: linear-gradient(45deg, #ff9800, #ff5722);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 2.2rem; margin-bottom: 5px; text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
+      color: #FFEA00; line-height: 1.3; background: linear-gradient(45deg, #ff9800, #ff5722);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-    
     .subtitle { font-size: 1.2rem; opacity: 0.9; margin-top: 5px; font-weight: 600; }
-    
     .jackpot-banner {
-      background: linear-gradient(45deg, #f44336, #e91e63);
-      padding: 10px;
-      border-radius: 50px;
-      margin: 15px auto;
-      width: 90%;
-      max-width: 400px;
-      text-align: center;
-      font-weight: bold;
-      font-size: 1.3rem;
-      box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4);
-      border: 2px solid gold;
+      background: linear-gradient(45deg, #f44336, #e91e63); padding: 10px; border-radius: 50px;
+      margin: 15px auto; width: 90%; max-width: 400px; text-align: center; font-weight: bold;
+      font-size: 1.3rem; box-shadow: 0 5px 15px rgba(244, 67, 54, 0.4); border: 2px solid gold;
     }
-    
     .form-section { background: var(--form-bg); border-radius: 15px; padding: 20px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
     .form-title { text-align: center; margin-bottom: 20px; color: #FFEA00; font-size: 1.4rem; }
     .input-row { display: flex; gap: 15px; margin-bottom: 20px; flex-wrap: wrap; justify-content: center; }
     .input-group { flex: 1; min-width: 200px; max-width: 300px; }
-    label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.1rem; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3); }
-    
+    label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 1.1rem; text-shadow: 1px 1px 3px rgba(0,0,0,0.3); }
     input {
-      width: 100%;
-      font-size: 1.1rem;
-      padding: 14px 18px;
-      border: none;
-      border-radius: 12px;
-      transition: all 0.3s ease;
-      background: rgba(255, 255, 255, 0.95);
-      color: var(--text-dark);
-      box-shadow: inset 0 2px 8px rgba(0,0,0,0.1), 0 4px 15px rgba(0,0,0,0.1);
-      text-align: center;
-      font-weight: 600;
+      width: 100%; font-size: 1.1rem; padding: 14px 18px; border: none; border-radius: 12px;
+      transition: all 0.3s ease; background: rgba(255,255,255,0.95); color: var(--text-dark);
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.1), 0 4px 15px rgba(0,0,0,0.1); text-align: center; font-weight: 600;
     }
-    
-    input:focus { outline: none; box-shadow: inset 0 2px 8px rgba(0,0,0,0.1), 0 0 0 3px rgba(255, 215, 0, 0.6); transform: scale(1.02); }
+    input:focus { outline: none; box-shadow: inset 0 2px 8px rgba(0,0,0,0.1), 0 0 0 3px rgba(255,215,0,0.6); transform: scale(1.02); }
     input::placeholder { color: #888; font-weight: normal; }
-    
     .button-group { margin-top: 15px; width: 100%; display: flex; justify-content: center; }
-    
     button {
-      width: 100%;
-      max-width: 300px;
-      font-size: 1.2rem;
-      padding: 16px;
-      border: none;
-      border-radius: 15px;
-      background: linear-gradient(45deg, var(--primary), var(--secondary));
-      color: var(--text-light);
-      font-weight: 700;
-      cursor: pointer;
-      letter-spacing: 1px;
-      box-shadow: 0 6px 20px rgba(37, 117, 252, 0.4);
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
+      width: 100%; max-width: 300px; font-size: 1.2rem; padding: 16px; border: none; border-radius: 15px;
+      background: linear-gradient(45deg, var(--primary), var(--secondary)); color: var(--text-light);
+      font-weight: 700; cursor: pointer; letter-spacing: 1px; box-shadow: 0 6px 20px rgba(37,117,252,0.4);
+      transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 12px;
     }
-    
-    button:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37, 117, 252, 0.6); }
-    button:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 3px 15px rgba(37, 117, 252, 0.4); }
+    button:hover:not(:disabled) { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(37,117,252,0.6); }
+    button:active:not(:disabled) { transform: translateY(1px); box-shadow: 0 3px 15px rgba(37,117,252,0.4); }
     button:disabled { opacity: 0.7; cursor: not-allowed; transform: none; box-shadow: none; }
-    
-    .slot-machine { background: var(--slot-bg); border-radius: 15px; padding: 20px; margin: 20px 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 25px rgba(0,0,0,0.3); position: relative; overflow: hidden; display: none; }
+    .slot-machine { background: var(--slot-bg); border-radius: 15px; padding: 20px; margin: 20px 0; box-shadow: inset 0 0 20px rgba(0,0,0,0.5), 0 10px 25px rgba(0,0,0,0.3); display: none; }
     .reels-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
-    .reel { width: var(--dice-size); height: var(--dice-size); background: var(--reel-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 4.8rem; box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.5); position: relative; overflow: hidden; color: #FFD700; }
+    .reel { width: var(--dice-size); height: var(--dice-size); background: var(--reel-bg); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 4.8rem; box-shadow: inset 0 0 10px rgba(0,0,0,0.8), 0 5px 15px rgba(0,0,0,0.5); color: #FFD700; }
     .controls { display: flex; flex-direction: column; align-items: center; gap: 20px; }
-    
     #result {
-      margin-top: 20px;
-      padding: 20px;
-      border-radius: 15px;
-      text-align: center;
-      font-weight: 600;
-      font-size: 1.2rem;
-      line-height: 1.6;
-      opacity: 0;
-      transform: translateY(15px);
-      transition: all 0.4s ease;
-      min-height: 100px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      white-space: pre-line;
-      display: none;
+      margin-top: 20px; padding: 20px; border-radius: 15px; text-align: center; font-weight: 600;
+      font-size: 1.2rem; line-height: 1.6; opacity: 0; transform: translateY(15px);
+      transition: all 0.4s ease; min-height: 100px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; white-space: pre-line; display: none;
     }
-    
     #result.show { opacity: 1; transform: translateY(0); }
-    .success { background: linear-gradient(135deg, var(--success), #96c93d); box-shadow: 0 4px 15px rgba(0, 176, 155, 0.3); }
-    .jackpot { background: linear-gradient(135deg, var(--jackpot), #ff416c); box-shadow: 0 4px 15px rgba(244, 67, 54, 0.3); animation: pulse 1.5s infinite; }
-    .error { background: linear-gradient(135deg, #ff9800, #ff5722); box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3); }
-    .loading { background: linear-gradient(135deg, #ffd200, #f7971e); box-shadow: 0 4px 15px rgba(255, 210, 0, 0.3); color: var(--text-dark); }
+    .success { background: linear-gradient(135deg, var(--success), #96c93d); }
+    .jackpot { background: linear-gradient(135deg, var(--jackpot), #ff416c); animation: pulse 1.5s infinite; }
+    .error { background: linear-gradient(135deg, #ff9800, #ff5722); }
+    .loading { background: linear-gradient(135deg, #ffd200, #f7971e); color: var(--text-dark); }
     .result-icon { font-size: 2.5rem; margin-bottom: 10px; }
-    
     .symbols-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; margin: 20px 0; text-align: center; }
-    .symbol-item { background: rgba(0, 0, 0, 0.2); padding: 12px; border-radius: 10px; font-size: 2.5rem; }
+    .symbol-item { background: rgba(0,0,0,0.2); padding: 12px; border-radius: 10px; font-size: 2.5rem; }
     .symbol-label { font-size: 1rem; margin-top: 8px; font-weight: bold; color: #FFD700; }
-    
-    .instructions { background: rgba(0, 0, 0, 0.2); padding: 20px; border-radius: 15px; margin-top: 25px; font-size: 0.95rem; border: 1px solid rgba(255, 255, 255, 0.15); }
+    .instructions { background: rgba(0,0,0,0.2); padding: 20px; border-radius: 15px; margin-top: 25px; font-size: 0.95rem; border: 1px solid rgba(255,255,255,0.15); }
     .instructions h3 { margin-top: 0; margin-bottom: 15px; color: #FFEA00; text-align: center; font-size: 1.2rem; }
     .instructions ul { padding-left: 25px; margin-bottom: 0; }
     .instructions li { margin-bottom: 12px; line-height: 1.5; }
-    
-    .footer { text-align: center; margin-top: 30px; font-size: 0.85rem; opacity: 0.85; line-height: 1.6; width: 100%; max-width: 800px; }
-    
+    .footer { text-align: center; margin-top: 30px; font-size: 0.85rem; opacity: 0.85; width: 100%; max-width: 800px; }
     @keyframes spin { 0% { transform: rotateX(0); } 100% { transform: rotateX(360deg); } }
     @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
     .spin { animation: spin 0.8s ease-out; }
-    
-    @media (max-width: 768px) { .container { padding: 20px 15px; } .reel { width: 80px; height: 80px; font-size: 3.5rem; } .symbols-grid { grid-template-columns: repeat(3, 1fr); } :root { --dice-size: 80px; } }
-    @media (max-width: 480px) { .container { padding: 15px 10px; } .reel { width: 70px; height: 70px; font-size: 3rem; } h1 { font-size: 1.8rem; } .symbols-grid { grid-template-columns: repeat(2, 1fr); } :root { --dice-size: 70px; } }
+    @media (max-width: 768px) { .container{padding:20px 15px;} .reel{width:80px;height:80px;font-size:3.5rem;} .symbols-grid{grid-template-columns:repeat(3,1fr);} :root{--dice-size:80px;} }
+    @media (max-width: 480px) { .container{padding:15px 10px;} .reel{width:70px;height:70px;font-size:3rem;} h1{font-size:1.8rem;} .symbols-grid{grid-template-columns:repeat(2,1fr);} :root{--dice-size:70px;} }
   </style>
 </head>
 <body>
@@ -196,14 +101,14 @@
         <span class="title-icon">🎲</span>
         <div>
           <h1>骰動之間 - 骰子挑戰</h1>
-          <div class="subtitle">每日一次機會，擲出六骰相同贏大獎！</div>
+          <div class="subtitle">擲出六骰相同贏大獎！</div>
         </div>
         <span class="title-icon">🍔</span>
       </div>
       <div class="jackpot-banner"><i class="fas fa-crown"></i> 六骰相同贏花生奶油堡 <i class="fas fa-crown"></i></div>
     </div>
     
-    <div class="form-section">
+    <div class="form-section" id="formSection">
       <div class="form-title"><i class="fas fa-user-check"></i> 請先驗證身份</div>
       <div class="input-row">
         <div class="input-group">
@@ -240,11 +145,10 @@
     <div class="instructions">
       <h3><i class="fas fa-info-circle"></i> 遊戲規則說明</h3>
       <ul>
-        <li><i class="fas fa-calendar-day"></i> <strong id="countdownTimer">每日重置倒數 00:00:00</strong></li>
         <li><i class="fas fa-user-check"></i> 需輸入姓名末兩字與數字三碼驗證身份</li>
         <li><i class="fas fa-dice"></i> 擲出六個骰子點數相同即中獎</li>
         <li><i class="fas fa-gift"></i> 中獎可獲得<strong>波士頓花生奶油堡</strong>一份</li>
-        <li><i class="fas fa-clipboard-check"></i> 遊戲結果自動記錄到系統</li>
+        <li><i class="fas fa-clipboard-check"></i> 每次遊戲結果都會自動記錄到系統</li>
       </ul>
     </div>
   </div>
@@ -271,15 +175,13 @@
     const numberCodeInput = document.getElementById('numberCode');
     const resultDiv = document.getElementById('result');
     const slotMachine = document.getElementById('slotMachine');
-    let countdownInterval = null;
+    const formSection = document.getElementById('formSection');
     
     function initGame() {
       verifyBtn.addEventListener('click', verifyPlayer);
       spinBtn.addEventListener('click', spinReels);
       numberCodeInput.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
       getIPAddress();
-      initializeCountdown();
-      loadStats();
     }
 
     async function getIPAddress() {
@@ -293,35 +195,6 @@
       }
     }
     
-    function initializeCountdown() {
-      const el = document.getElementById('countdownTimer');
-      if (!el) return;
-      setInterval(() => {
-        const now = new Date();
-        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-        const diff = tomorrow - now;
-        const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-        const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-        const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-        el.textContent = `每日重置倒數 ${h}:${m}:${s}`;
-      }, 1000);
-    }
-
-    function startPlayedCountdown() {
-      if (countdownInterval) clearInterval(countdownInterval);
-      const update = () => {
-        const now = new Date();
-        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-        const diff = tomorrow - now;
-        const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-        const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-        const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-        showResult(`<div class="result-icon">⏳</div>您今天已經玩過囉！<br>下次挑戰倒數： ${h}:${m}:${s}`, "error", true);
-      };
-      update();
-      countdownInterval = setInterval(update, 1000);
-    }
-    
     function verifyPlayer() {
       const nameTail = nameTailInput.value.trim().toUpperCase();
       const numberCode = numberCodeInput.value.trim();
@@ -329,20 +202,15 @@
       if (!nameTail || nameTail.length !== 2) return showResult("請輸入完整姓名末兩字", "error");
       if (!numberCode || numberCode.length !== 3) return showResult("請輸入完整數字三碼", "error");
       
-      if (localStorage.getItem('diceLastPlay') === new Date().toISOString().split('T')[0]) {
-        return startPlayedCountdown();
-      }
-      
       verifyBtn.disabled = true;
       verifyBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 驗證中...';
       
       setTimeout(() => {
         gameState.isVerified = true;
         gameState.playerInfo = { nameTail, numberCode };
-        slotMachine.style.display = 'block';
-        showResult('<div class="result-icon">✅</div>驗證成功！<br>今日挑戰資格已解鎖', "success");
-        verifyBtn.disabled = false;
-        verifyBtn.innerHTML = '<i class="fas fa-check-circle"></i> 已驗證';
+        formSection.style.display = 'none'; // 隱藏驗證區塊
+        slotMachine.style.display = 'block'; // 顯示遊戲機
+        showResult('<div class="result-icon">✅</div>驗證成功！<br>您可以開始無限次挑戰！', "success");
       }, 1000);
     }
     
@@ -353,7 +221,7 @@
       spinBtn.disabled = true;
       showResult('<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中...', "loading");
       
-      const isWin = Math.random() < 0.02;
+      const isWin = Math.random() < 0.02; // 2% 中獎率
       const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
       
       reels.forEach((reel, index) => {
@@ -375,25 +243,17 @@
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         logToGoogleSheets(true);
       } else {
-        showResult(`<div class="result-icon">🎲</div>本次結果：${results.join(' ')}<br>未中獎，下次再試試手氣吧！`, "error");
+        showResult(`<div class="result-icon">🎲</div>本次結果：${results.join(' ')}<br>未中獎，再試一次吧！`, "error");
         logToGoogleSheets(false);
       }
       
-      saveStats();
-      gameState.isVerified = false;
+      // *** 修改處：不再禁用遊戲，而是直接讓玩家可以再玩一次 ***
       gameState.isSpinning = false;
       spinBtn.disabled = false;
-      
-      setTimeout(() => {
-        slotMachine.style.display = 'none';
-        startPlayedCountdown();
-      }, 5000);
     }
     
     function logToGoogleSheets(isWin) {
-      // ***** 這裏是本次最重要的修改 *****
       const scriptURL = 'https://script.google.com/macros/s/AKfycbxfp3OkXAS0n-En5_58sTeQwpDpF7xyrv7Pb7VhybR1ZhscOjsvAW_zAAdWX4WDu_hksw/exec';
-      
       const data = {
         numberCode: gameState.playerInfo.numberCode,
         nameTail: gameState.playerInfo.nameTail,
@@ -402,9 +262,7 @@
       };
 
       fetch(scriptURL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify(data),
+        method: 'POST', mode: 'no-cors', body: JSON.stringify(data),
         headers: { 'Content-Type': 'application/json' },
       })
       .then(() => console.log('記錄請求已發送到 Google Sheets。'))
@@ -412,21 +270,16 @@
     }
     
     function showResult(message, type, forceShow = false) {
-      if (resultDiv.classList.contains('show') && !forceShow) return;
+      if (resultDiv.classList.contains('show') && !forceShow && !type.includes('loading')) {
+          // 如果結果已經顯示，並且不是新的 loading，則先淡出舊結果
+          resultDiv.classList.remove('show');
+          setTimeout(() => showResult(message, type, true), 300);
+          return;
+      }
       resultDiv.innerHTML = message;
       resultDiv.className = `result ${type}`;
       resultDiv.style.display = 'flex';
       setTimeout(() => resultDiv.classList.add('show'), 10);
-    }
-    
-    function saveStats() {
-      localStorage.setItem('diceLastPlay', new Date().toISOString().split('T')[0]);
-    }
-    
-    function loadStats() {
-      if (localStorage.getItem('diceLastPlay') === new Date().toISOString().split('T')[0]) {
-        startPlayedCountdown();
-      }
     }
     
     window.addEventListener('DOMContentLoaded', initGame);
