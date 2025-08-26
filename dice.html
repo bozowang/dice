@@ -1,392 +1,371 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>骰動之間 - 骰子吃角子老虎机 (自動保底版)</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-  <style>
-    :root {
-      --primary: #6a11cb; --secondary: #2575fc; --success: #00b09b; --jackpot: #ff416c;
-      --bg-gradient: linear-gradient(45deg, #1a2980, #26d0ce); --slot-bg: #2c3e50;
-      --reel-bg: #1a1a2e; --form-bg: rgba(255, 255, 255, 0.1); --shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
-      --text-light: #ffffff; --text-dark: #333333; --dice-size: 100px;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-    body {
-      font-family: 'Segoe UI', 'Microsoft JhengHei', sans-serif; padding: 20px 15px; min-height: 100vh;
-      color: var(--text-light); background: var(--bg-gradient); background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite; display: flex; flex-direction: column;
-      justify-content: center; align-items: center; line-height: 1.6;
-    }
-    @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-    .container {
-      width: 100%; max-width: 800px; background: rgba(0, 0, 0, 0.25); padding: 25px;
-      border-radius: 20px; backdrop-filter: blur(10px); box-shadow: var(--shadow);
-      border: 1px solid rgba(255, 255, 255, 0.2); margin: 20px auto;
-    }
-    .header { text-align: center; margin-bottom: 25px; }
-    h1 {
-      font-size: 2.2rem; margin-bottom: 5px; text-shadow: 2px 2px 6px rgba(0,0,0,0.4);
-      color: #FFEA00; background: linear-gradient(45deg, #ff9800, #ff5722);
-      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    }
-    .subtitle { font-size: 1.2rem; opacity: 0.9; margin-top: 5px; font-weight: 600; }
-    .form-section { background: var(--form-bg); border-radius: 15px; padding: 20px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-    .input-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: 600; }
-    input {
-      width: 100%; font-size: 1.1rem; padding: 14px 18px; border: none; border-radius: 12px;
-      background: rgba(255,255,255,0.95); color: var(--text-dark); text-align: center; font-weight: 600;
-    }
-    button {
-      width: 100%; max-width: 300px; font-size: 1.2rem; padding: 16px; border: none; border-radius: 15px;
-      background: linear-gradient(45deg, var(--primary), var(--secondary)); color: var(--text-light);
-      font-weight: 700; cursor: pointer; display: block; margin: 20px auto 0;
-    }
-    button:disabled { opacity: 0.7; cursor: not-allowed; }
-    .slot-machine { background: var(--slot-bg); border-radius: 15px; padding: 20px; margin: 20px 0; display: none; }
-    .reels-container { display: flex; justify-content: center; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; perspective: 1000px; }
-    .reel { 
-      width: var(--dice-size); height: var(--dice-size); background: var(--reel-bg); border-radius: 12px; 
-      display: flex; align-items: center; justify-content: center; font-size: 4.8rem; color: #FFD700;
-      transform-style: preserve-3d;
-    }
-    #result {
-      margin-top: 20px; padding: 20px; border-radius: 15px; text-align: center; font-weight: 600;
-      font-size: 1.2rem; min-height: 100px; display: none; flex-direction: column;
-      align-items: center; justify-content: center; transition: opacity 0.3s;
-    }
-    #result.show { display: flex; opacity: 1; }
-    #result:not(.show) { opacity: 0; }
-    .success { background: linear-gradient(135deg, var(--success), #96c93d); }
-    .jackpot { background: linear-gradient(135deg, var(--jackpot), #ff416c); animation: pulse 1.5s infinite; }
-    .error { background: linear-gradient(135deg, #ff9800, #ff5722); }
-    .loading { background: linear-gradient(135deg, #ffd200, #f7971e); color: var(--text-dark); }
-    .result-icon { font-size: 2.5rem; margin-bottom: 10px; }
-    .instructions ul { list-style: none; padding-left: 0; }
-    .instructions li { margin-bottom: 12px; line-height: 1.5; }
-
-    @keyframes spin-x { from { transform: rotateX(0deg); } to { transform: rotateX(3600deg); } }
-    @keyframes spin-y { from { transform: rotateY(0deg); } to { transform: rotateY(3600deg); } }
-    @keyframes spin-z { from { transform: rotateZ(0deg); } to { transform: rotateZ(3600deg); } }
-    @keyframes spin-xy { from { transform: rotateX(0deg) rotateY(0deg); } to { transform: rotateX(3600deg) rotateY(3600deg); } }
-    @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
-    
-    .reel.is-spinning { animation-duration: 9.5s; animation-timing-function: ease-in-out; animation-fill-mode: forwards; }
-    .spin-x { animation-name: spin-x; } .spin-y { animation-name: spin-y; } .spin-z { animation-name: spin-z; } .spin-xy { animation-name: spin-xy; }
-    
-    #daily-countdown { font-size: 1.3rem; font-weight: bold; }
-    #countdown-timer { font-size: 1.5rem; font-weight: bold; color: var(--text-dark); margin-top: 10px; }
-
-    @media (max-width: 768px) { :root{--dice-size:80px;} .reel{font-size:3.5rem;} }
-    @media (max-width: 480px) { :root{--dice-size:70px;} .reel{font-size:3rem;} h1{font-size:1.8rem;} }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>骰動之間 - 骰子挑戰</h1>
-      <div class="subtitle">每日一回合 (3次機會)，中獎即結束！</div>
-    </div>
-    
-    <div class="form-section" id="formSection">
-      <div class="input-group">
-        <label for="nameTail">姓名末兩字 (需與證件相符)</label>
-        <input id="nameTail" type="text" maxlength="2" placeholder="例如：小明" autocomplete="off" />
-      </div>
-      <div class="input-group">
-        <label for="numberCode">數字三碼</label>
-        <input id="numberCode" type="text" maxlength="3" placeholder="000" autocomplete="off" inputmode="numeric" />
-      </div>
-      <button id="verifyBtn">註冊/登入</button>
-    </div>
-    
-    <div class="slot-machine" id="slotMachine">
-      <div class="reels-container">
-        <div class="reel">⚀</div> <div class="reel">⚁</div> <div class="reel">⚂</div>
-        <div class="reel">⚃</div> <div class="reel">⚄</div> <div class="reel">⚅</div>
-      </div>
-      <button id="spinBtn">擲骰子 (剩餘 3 次)</button>
-    </div>
-    
-    <div id="result"></div>
-    
-    <div class="instructions" style="margin-top:25px;">
-      <h3 style="text-align:center;">遊戲規則</h3>
-      <ul>
-       <li><i class="fas fa-calendar-day"></i> <strong>每日限定：</strong> 每個帳號每天僅限遊玩一個回合 (3次機會)。</li>
-        <li><i class="fas fa-desktop"></i> <strong>裝置綁定：</strong> 每個裝置僅能註冊一組帳號。</li>
-        <li><i class="fas fa-id-card"></i> <strong>身份驗證：</strong> 中獎者需出示與註冊姓名相符之**合法證件**領獎。</li>
-        <li><i class="fas fa-dice"></i> <strong>幸運中獎：</strong> 六骰相同即中「波士頓花生奶油堡」。</li>
-        <li><i class="fas fa-star"></i> <strong>保底機制：</strong> 連續 **6 個回合** 未中獎，第 **7 回合** 不用擲我們直接送您「免費吃到堡」。</li>
-        <li><i class="fas fa-exclamation-circle"></i> <strong>保底限領：</strong> 「免費吃到堡」大獎每位玩家限領一次。</li>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>每日挑戰遊戲平台</title>
+    <style>
+        :root {
+            --primary: #4e54c8;
+            --secondary: #8f94fb;
+            --accent: #ff6b6b;
+            --light: #f8f9fa;
+            --dark: #343a40;
+            --success: #28a745;
+            --warning: #ffc107;
+            --info: #17a2b8;
+        }
         
-        <!-- --- 以下是根據您的要求修改的兩行 --- -->
-        <li><i class="fas fa-hourglass-half"></i> <strong>連續參與：</strong> 每回合間隔不得超過七天，若超過 **7 天**，累積的保底進度將會**自動歸零**。</li>
-        <li><i class="fas fa-users"></i> <strong>每日中獎：</strong>數量有限。僅限現場參與並由工作人員見證之情況下方為有效。</li>
-      </ul>
-    </div>
-  </div>
-  
-  <script>
-    const gameState = {
-      isVerified: false, isSpinning: false,
-      playerInfo: {}, ipAddress: '載入中...',
-      playerData: {}, playerKey: '',
-      spinsRemaining: 3
-    };
-    
-    const symbols = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'];
-    const spinAnimations = ['spin-x', 'spin-y', 'spin-z', 'spin-xy'];
-    let dailyLockInterval = null;
-    let countdownInterval = null;
-
-    const reels = document.querySelectorAll('.reel');
-    const spinBtn = document.getElementById('spinBtn');
-    const verifyBtn = document.getElementById('verifyBtn');
-    const nameTailInput = document.getElementById('nameTail');
-    const numberCodeInput = document.getElementById('numberCode');
-    const resultDiv = document.getElementById('result');
-    const slotMachine = document.getElementById('slotMachine');
-    const formSection = document.getElementById('formSection');
-    
-    function initGame() {
-      checkDeviceLock();
-      verifyBtn.addEventListener('click', handleLoginAttempt);
-      spinBtn.addEventListener('click', spinReels);
-      numberCodeInput.addEventListener('input', function() { this.value = this.value.replace(/[^0-9]/g, ''); });
-      getIPAddress();
-    }
-
-    async function getIPAddress() {
-      try {
-        const response = await fetch('https://api.ipify.org?format=json');
-        gameState.ipAddress = (await response.json()).ip;
-      } catch (error) { gameState.ipAddress = '無法取得'; }
-    }
-
-    function checkDeviceLock() {
-        const lockedPlayerKey = localStorage.getItem('dice_device_locked_player_key');
-        if (lockedPlayerKey) {
-            const name = lockedPlayerKey.split('_')[3];
-            const code = lockedPlayerKey.split('_')[4];
-            verifyPlayerRemotely(name, code, lockedPlayerKey, true);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Arial', 'Microsoft JhengHei', sans-serif;
         }
-    }
-
-    function handleLoginAttempt() {
-        const nameTail = nameTailInput.value.trim().toUpperCase();
-        const numberCode = numberCodeInput.value.trim();
-        if (!nameTail || nameTail.length !== 2) return alert("請輸入與證件相符的姓名末兩字");
-        if (!numberCode || numberCode.length !== 3) return alert("請輸入完整數字三碼");
-        const lockedPlayerKey = localStorage.getItem('dice_device_locked_player_key');
-        const currentPlayerKey = `dice_player_v2_${nameTail}_${numberCode}`;
-        if (lockedPlayerKey && lockedPlayerKey !== currentPlayerKey) {
-            alert("此裝置已被其他帳號鎖定，無法登入。");
-            return;
-        }
-        verifyPlayerRemotely(nameTail, numberCode, currentPlayerKey, false);
-    }
-    
-    async function verifyPlayerRemotely(name, code, playerKey, isAutoLogin) {
-        if (!isAutoLogin) {
-            showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>正在連線伺服器驗證身份...`, "loading");
-        }
-        const scriptURL = 'https://script.google.com/macros/s/AKfycbxK-3VOJ85yxbpQF5o-CSWaJo5HJtt3VruP8SiK8UFWBufLOfzySeoJ1nTyf9Coe2CgoQ/exec';
-        const verificationURL = `${scriptURL}?action=verifyPlayer&name=${encodeURIComponent(name)}&code=${encodeURIComponent(code)}`;
-        try {
-            const response = await fetch(verificationURL);
-            if (!response.ok) throw new Error(`伺服器錯誤: ${response.statusText}`);
-            const result = await response.json();
-            if(result.status === 'OK') {
-                if (!localStorage.getItem('dice_device_locked_player_key')) {
-                    localStorage.setItem('dice_device_locked_player_key', playerKey);
-                }
-                loginPlayer(playerKey, name, code);
-            } else if (result.status === 'PLAYED_TODAY') {
-                showDailyLockScreen();
-            } else { throw new Error(result.message || '未知的伺服器錯誤'); }
-        } catch (error) { showResult(`<div class="result-icon">❌</div>驗證失敗：${error.message}`, "error"); }
-    }
-
-    function loginPlayer(playerKey, name, code) {
-        formSection.style.display = 'none';
-        gameState.isVerified = true;
-        gameState.playerInfo = { nameTail: name, numberCode: code };
-        gameState.playerKey = playerKey;
-        gameState.playerData = JSON.parse(localStorage.getItem(playerKey)) || { roundCount: 0, hasClaimedGuaranteedPrize: false, lastCompletionDate: null };
         
-        let penaltyMessage = '';
-        if (gameState.playerData.lastCompletionDate) {
-            const lastDate = new Date(gameState.playerData.lastCompletionDate);
-            const today = new Date();
-            lastDate.setHours(0, 0, 0, 0);
-            today.setHours(0, 0, 0, 0);
-            const diffTime = Math.abs(today - lastDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays >= 7) {
-                gameState.playerData.roundCount = 0;
-                penaltyMessage = `<br><small style="color:#ffc107;">由於您已超過7天未參與，保底進度已歸零。</small>`;
+        body {
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 30px 0;
+            color: white;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            margin-bottom: 30px;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        h2 {
+            color: var(--primary);
+            margin: 20px 0 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--secondary);
+        }
+        
+        h3 {
+            color: var(--secondary);
+            margin: 15px 0 10px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .emphasis {
+            background-color: #fff9e6;
+            border-left: 4px solid var(--warning);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        .warning {
+            background-color: #ffe6e6;
+            border-left: 4px solid var(--accent);
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 4px;
+        }
+        
+        ul, ol {
+            margin-left: 20px;
+            margin-bottom: 15px;
+        }
+        
+        li {
+            margin-bottom: 8px;
+        }
+        
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .game-card {
+            background: var(--light);
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .game-icon {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            color: var(--primary);
+        }
+        
+        .reward-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        
+        .reward-table th, .reward-table td {
+            padding: 12px 15px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .reward-table th {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .reward-table tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        
+        .reward-table tr:hover {
+            background-color: #e9ecef;
+        }
+        
+        .highlight {
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        .footer {
+            text-align: center;
+            padding: 20px;
+            margin-top: 30px;
+            color: white;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+        
+        .game-illustration {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        
+        .illustration-item {
+            text-align: center;
+            margin: 10px;
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .illustration-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .game-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
             }
         }
-
-        // --- 這是本次修改的核心邏輯：登入時檢查自動保底 ---
-        if (gameState.playerData.roundCount >= 6 && !gameState.playerData.hasClaimedGuaranteedPrize) {
-            handleGuaranteedWin();
-            return; // 結束函數，不顯示遊戲機
-        }
-
-        gameState.spinsRemaining = 3;
-        slotMachine.style.display = 'block';
-        spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
-        spinBtn.disabled = false;
+    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-gamepad"></i> 每日挑戰遊戲平台</h1>
+            <p>精彩遊戲，免費參與，贏取專屬獎勵！</p>
+        </header>
         
-        let message;
-        if (gameState.playerData.hasClaimedGuaranteedPrize) {
-            message = `歡迎回來, ${name}！<br>您已領取過保底大獎，祝您幸運中獎！`;
-        } else {
-            const roundCount = gameState.playerData.roundCount;
-            const remaining = 6 - roundCount;
-            message = `歡迎回來！您已累積 ${roundCount} 回合未中獎。<br>再 ${remaining} 回合即可獲得保底獎勵！`;
-        }
-        showResult(`<div class="result-icon">👍</div>${message}${penaltyMessage}`, "success");
-    }
-
-    // --- 新增：處理自動保底中獎的專用函數 ---
-    function handleGuaranteedWin() {
-        const prize = "免費吃到堡";
-        const remark = "第7回合自動保底";
-
-        showResult(`<div class="result-icon">🎉</div>恭喜您，${gameState.playerInfo.nameTail}！<br>您已達成連續6回合未中獎的條件！<br>我們直接送您<b>${prize}</b>一份！<br><br>今日回合結束。`, "jackpot");
-        confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
+        <div class="card">
+            <h2><i class="fas fa-bullseye"></i> 平台主旨</h2>
+            <p>歡迎體驗本店的每日挑戰系列遊戲！本平台旨在為我們的貴賓提供一項充滿趣味的互動娛樂體驗，作為對您支持的回饋。<span class="highlight">本平台所有遊戲的參與過程完全免費</span>，獎勵機制純屬娛樂性質，並非任何形式的博弈行為。希望您能在此享受挑戰的樂趣。</p>
+            
+            <div class="game-illustration">
+                <div class="illustration-item">
+                    <div class="illustration-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <h3>完全免費</h3>
+                    <p>無需支付任何費用參與遊戲</p>
+                </div>
+                <div class="illustration-item">
+                    <div class="illustration-icon">
+                        <i class="fas fa-gift"></i>
+                    </div>
+                    <h3>精彩獎勵</h3>
+                    <p>完成挑戰贏取專屬優惠</p>
+                </div>
+                <div class="illustration-item">
+                    <div class="illustration-icon">
+                        <i class="fas fa-smile"></i>
+                    </div>
+                    <h3>趣味體驗</h3>
+                    <p>多種遊戲選擇，樂趣無窮</p>
+                </div>
+            </div>
+        </div>
         
-        logToGoogleSheets(true, prize, remark);
-
-        gameState.playerData.hasClaimedGuaranteedPrize = true;
-        gameState.playerData.roundCount = 0;
-        endGameSession(true);
-    }
-    
-    function showDailyLockScreen() {
-        if(dailyLockInterval) clearInterval(dailyLockInterval);
-        slotMachine.style.display = 'none';
-        formSection.style.display = 'none';
-        showResult(`<div class="result-icon">⏳</div>您今日的回合已結束！<br>請明天再來挑戰。<br>下次開放倒數：<div id="daily-countdown">--:--:--</div>`, "error");
-        setTimeout(() => {
-            const countdownElement = document.getElementById('daily-countdown');
-            if (!countdownElement) return;
-            const updateCountdown = () => {
-                const now = new Date();
-                const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-                const diff = tomorrow - now;
-                const h = String(Math.floor(diff / 3600000)).padStart(2, '0');
-                const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, '0');
-                const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, '0');
-                countdownElement.textContent = `${h}:${m}:${s}`;
-            };
-            updateCountdown();
-            dailyLockInterval = setInterval(updateCountdown, 1000);
-        }, 250);
-    }
-    
-    function spinReels() {
-      if (!gameState.isVerified || gameState.isSpinning || gameState.spinsRemaining <= 0) return;
-      
-      gameState.isSpinning = true;
-      spinBtn.disabled = true;
-
-      if (countdownInterval) clearInterval(countdownInterval);
-      let countdown = 10;
-      showResult(`<div class="result-icon"><i class="fas fa-spinner fa-spin"></i></div>骰子轉動中...<div id="countdown-timer">${countdown}</div>`, "loading");
-      countdownInterval = setInterval(() => {
-        countdown--;
-        const timerEl = document.getElementById('countdown-timer');
-        if (timerEl) timerEl.textContent = countdown > 0 ? countdown : 0;
-        if (countdown <= 0) clearInterval(countdownInterval);
-      }, 1000);
-
-      const isLuckyWin = Math.random() < 0.02; // 現在只判斷幸運中獎
-      const isWin = isLuckyWin;
-      
-      let prize = "無";
-      let remark = "";
-      if (isLuckyWin) {
-        prize = "波士頓花生奶油堡";
-        remark = "幸運中獎";
-      }
-
-      const winSymbol = symbols[Math.floor(Math.random() * symbols.length)];
-      
-      reels.forEach((reel) => {
-        reel.className = 'reel';
-        void reel.offsetWidth;
-        reel.className = `reel is-spinning ${spinAnimations[Math.floor(Math.random() * spinAnimations.length)]}`;
-        setTimeout(() => { reel.textContent = isWin ? winSymbol : symbols[Math.floor(Math.random() * symbols.length)]; }, 9500);
-      });
-
-      setTimeout(() => checkResult(isWin, prize, remark), 10000);
-    }
-    
-    function checkResult(isWin, prize, remark) {
-      clearInterval(countdownInterval);
-      logToGoogleSheets(isWin, prize, remark);
-      
-      gameState.spinsRemaining--;
-
-      if (isWin) {
-        showResult(`<div class="result-icon">🎉</div>恭喜中獎！<br>您贏得<b>${prize}</b>一份！<br>(${remark})<br><br>今日回合結束。`, "jackpot");
-        confetti({ particleCount: 200, spread: 90, origin: { y: 0.6 } });
-        gameState.playerData.roundCount = 0; // 中幸運獎，回合計數歸零
-        endGameSession(true);
-      } else {
-        if(gameState.spinsRemaining > 0) {
-            showResult(`<div class="result-icon">🎲</div>未中獎，再接再厲！<br>今日還剩 ${gameState.spinsRemaining} 次機會。`, "error");
-            gameState.isSpinning = false;
-            spinBtn.disabled = false;
-            spinBtn.textContent = `擲骰子 (剩餘 ${gameState.spinsRemaining} 次)`;
-        } else {
-            showResult(`<div class="result-icon">😥</div>今日 3 次機會已用完，<br>請明天再來挑戰！`, "error");
-            gameState.playerData.roundCount++; // 回合結束未中獎，回合計數+1
-            endGameSession(false);
-        }
-      }
-    }
-
-    function endGameSession(didWin) {
-        gameState.playerData.lastCompletionDate = new Date().toISOString().split('T')[0];
-        localStorage.setItem(gameState.playerKey, JSON.stringify(gameState.playerData));
-        if (didWin) { // 只有在中獎時才禁用按鈕，讓玩家看到結果
-            spinBtn.disabled = true;
-            spinBtn.textContent = "恭喜中獎！";
-        }
-    }
-    
-    function logToGoogleSheets(isWin, prize, remark) {
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbxK-3VOJ85yxbpQF5o-CSWaJo5HJtt3VruP8SiK8UFWBufLOfzySeoJ1nTyf9Coe2CgoQ/exec';
-      const data = {
-        numberCode: gameState.playerInfo.numberCode, nameTail: gameState.playerInfo.nameTail,
-        isWin: isWin, ip: gameState.ipAddress, prize: prize, remark: remark
-      };
-      fetch(scriptURL, {
-        method: 'POST', mode: 'no-cors', body: JSON.stringify(data),
-        headers: { 'Content-Type': 'application/json' },
-      })
-      .then(() => console.log('記錄請求已發送到 Google Sheets。'))
-      .catch(error => console.error('記錄失敗:', error));
-    }
-    
-    function showResult(message, type) {
-      resultDiv.classList.remove('show');
-      setTimeout(() => {
-          resultDiv.innerHTML = message;
-          resultDiv.className = `result ${type}`;
-          resultDiv.classList.add('show');
-      }, 200);
-    }
-    
-    initGame();
-  </script>
+        <div class="card">
+            <h2><i class="fas fa-book"></i> 通用遊戲規則</h2>
+            <ol>
+                <li><span class="highlight">帳號取得</span>：請先洽詢店內服務人員進行登記，即可取得您專屬的登入帳號與密碼。</li>
+                <li><span class="highlight">參加資格</span>：每日每位玩家僅限挑戰一次。挑戰資格將於次日凌晨零時重置。</li>
+                <li><span class="highlight">遊戲回合</span>：所有挑戰遊戲（無論是撲克或骰子類型）均為 <span class="highlight">8</span> 回合制。</li>
+                <li><span class="highlight">勝負判定</span>：每回合的勝負將根據該遊戲的特定規則進行。最終獎勵則依據您在 8 回合挑戰結束後的總勝場數決定。</li>
+                <li><span class="highlight">公平機制</span>：為確保所有玩家皆有機會獲獎，遊戲結果由後端系統劇本隨機決定，AI會根據劇本安排每一回合的勝負情境，提供充滿挑戰與拉鋸的遊戲體驗。</li>
+                <li><span class="highlight">時間限制</span>：部分遊戲設有操作倒數計時（如：20秒）。請務必在時間內完成指定操作（如下注、分牌），逾時將視為放棄該回合，並可能直接判負。</li>
+            </ol>
+            
+            <div class="emphasis">
+                <i class="fas fa-exclamation-circle"></i> <strong>重要提示：</strong> 每日僅能挑戰一次，請把握每次機會！
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-dice"></i> 各遊戲玩法簡介</h2>
+            <div class="game-grid">
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-dice-six"></i></div>
+                    <h3>骰子每日挑戰</h3>
+                    <p>透過擲骰與電腦比大小或牌型組合，贏得回合勝利。</p>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-heart"></i></div>
+                    <h3>撿紅點</h3>
+                    <p>經典撲克牌遊戲，透過湊對或湊成10點取得更高分數。</p>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-club"></i></div>
+                    <h3>21點</h3>
+                    <p>讓手中牌點數總和比莊家更接近21點但不超過。</p>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-layer-group"></i></div>
+                    <h3>十三支</h3>
+                    <p>將13張牌分為三墩，與電腦的三墩分別比大小。</p>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-crown"></i></div>
+                    <h3>大老二</h5>
+                    <p>找出最強的5張牌組合與電腦比大小。</p>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-hat-cowboy"></i></div>
+                    <h3>德州撲克</h3>
+                    <p>2張底牌與5張公共牌組成最佳牌組與莊家比大小。</p>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-user-friends"></i></div>
+                    <h3>三公</h3>
+                    <p>比較三張手牌點數相加後的個位數大小。</p>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-water"></i></div>
+                    <h3>加勒比海梭哈</h3>
+                    <p>您與莊家各發5張牌，直接比對牌型大小。</p>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-puzzle-piece"></i></div>
+                    <h3>牌九撲克</h3>
+                    <p>將7張手牌分為後墩和前墩，與莊家分別比大小。</p>
+                </div>
+                
+                <div class="game-card">
+                    <div class="game-icon"><i class="fas fa-horse-head"></i></div>
+                    <h3>Let It Ride</h3>
+                    <p>3張手牌與2張公共牌組成最終牌組與莊家比大小。</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-trophy"></i> 獎勵機制</h2>
+            <p>挑戰結束後，系統將根據您的總「勝場數」或「猜中次數」來決定獎勵。</p>
+            
+            <table class="reward-table">
+                <thead>
+                    <tr>
+                        <th>勝場數</th>
+                        <th>獎勵內容</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>獲勝 5 回合</td>
+                        <td>買五送一卷 (可寄放)</td>
+                    </tr>
+                    <tr>
+                        <td>獲勝 6 回合</td>
+                        <td>第二件半價 (吃到堡或指定商品)</td>
+                    </tr>
+                    <tr>
+                        <td>獲勝 7 回合</td>
+                        <td>買一送一 (吃到堡或指定商品)</td>
+                    </tr>
+                    <tr>
+                        <td>獲勝 8 回合</td>
+                        <td>免費 (吃到堡或指定商品)</td>
+                    </tr>
+                </tbody>
+            </table>
+            
+            <div class="emphasis">
+                <i class="fas fa-shield-alt"></i> <strong>保底機制：</strong> 若玩家連續6次登入挑戰（每次間隔不得超過3天）皆未獲得上述任何獎項，則在第7次登入挑戰時，系統將直接給予「免費」獎勵。若挑戰間隔超過3天，則先前累積的次數將會歸零。
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2><i class="fas fa-exclamation-triangle"></i> 重要注意事項與警語</h2>
+            <ol>
+                <li><span class="highlight">免費性質</span>：本平台所有遊戲皆為<span class="highlight">完全免費參加</span>，過程中不涉及任何形式的付費、儲值或金錢交易。</li>
+                <li><span class="highlight">獎勵性質</span>：所有遊戲獎項均為本店消費優惠或指定商品，<span class="highlight">絕對無法兌換現金</span>或找零，亦不得轉讓。</li>
+                <li><span class="highlight">最終解釋權</span>：本店保有對所有遊戲規則、獎勵內容、活動辦法及爭議的<span class="highlight">最終解釋權與裁量權</span>。若有任何規則或活動變更，將以現場公告為準，恕不另行通知。</li>
+                <li><span class="highlight">技術問題</span>：若因個人設備問題（如：手機當機、瀏覽器閃退）、網路連線中斷或任何不可抗力因素導致遊戲無法完成或中斷，該次挑戰將被視為已完成且無獲獎。</li>
+                <li><span class="highlight">現場原則</span>：所有獎勵的兌換，皆須由挑戰者<span class="highlight">本人親自在現場</span>，並於獲獎畫面顯示時，由店員確認後方為有效。畫面一旦登出、關閉或離開，即視為該次挑戰結束，無法再追溯或兌獎。</li>
+                <li><span class="highlight">公平遊戲</span>：嚴禁使用任何外掛程式、腳本或任何非官方提供之方式進行遊戲。一經發現，本店有權取消其獲獎資格，並保留後續追訴權利。</li>
+                <li><span class="highlight">資格限制</span>：本挑戰活動僅限符合資格的現場顧客參與。</li>
+            </ol>
+            
+            <div class="warning">
+                <i class="fas fa-exclamation-circle"></i> <strong>特別注意：</strong> 獎勵必須在獲獎當下由店員確認，離開畫面後無法兌換！
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p><i class="fas fa-heart"></i> <strong>感謝您的參與，祝您遊戲愉快，好運連連！</strong></p>
+            <p>本活動最終解釋權歸本店所有</p>
+        </div>
+    </div>
 </body>
 </html>
