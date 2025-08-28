@@ -204,7 +204,7 @@
         }
         
         .illustration-icon {
-            font-size: 3.8rem; /* 放大说明图标 */
+            font-size: 3.8rem; /* 放大說明圖示 */
             color: var(--primary);
             margin-bottom: 15px;
         }
@@ -230,7 +230,7 @@
             margin: 20px 0;
             text-decoration: none;
             font-weight: bold;
-            font-size: 1.3rem; /* 放大按钮文本 */
+            font-size: 1.3rem; /* 放大按鈕文本 */
             transition: all 0.3s;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         }
@@ -257,13 +257,15 @@
         .counter i {
             margin-right: 8px;
         }
-        
-        .featured-image {
-            width: 100%;
-            border-radius: 15px;
-            margin: 20px 0;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-            border: 3px solid var(--light);
+
+        /* 新增的圖片樣式 */
+        .header-image {
+            max-width: 100%; /* 確保圖片響應式 */
+            height: auto;
+            border-radius: 10px; /* 圓角與header風格一致 */
+            margin: 20px auto 0 auto; /* 上方間距並居中 */
+            display: block; /* 讓 margin: auto 生效 */
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* 輕微陰影 */
         }
         
         @media (max-width: 768px) {
@@ -272,7 +274,7 @@
             }
             
             h1 {
-                font-size: 2.5rem; /* 响应式调整 */
+                font-size: 2.5rem; /* 響應式調整 */
             }
             
             .game-illustration {
@@ -292,6 +294,8 @@
         <header>
             <h1><i class="fas fa-dice"></i> 骰動幸運 & AI挑戰遊戲平台</h1>
             <p>實體骰子遊戲與AI電子遊戲的完美結合！完全免費參與！</p>
+            <!-- 插入圖片的位置 -->
+            <img src="https://drive.google.com/uc?id=16bX621UoNvOP9kyyUf-wpSNihBgwUFgX" alt="骰動幸運活動圖片" class="header-image">
             <div class="counter">
                 <i class="fas fa-users"></i> 今日參與: <span id="participant-count">0</span> 人
             </div>
@@ -300,9 +304,6 @@
         <div class="card">
             <h2><i class="fas fa-gift"></i> 平台主旨</h2>
             <p>歡迎體驗本店的實體骰子遊戲與AI每日挑戰系列遊戲！本平台旨在為我們的貴賓提供充滿趣味的互動娛樂體驗，作為對您支持的回饋。<span class="highlight">所有遊戲的參與過程完全免費</span>，獎勵機制純屬娛樂性質。希望您能在此享受挑戰的樂趣。</p>
-            
-            <!-- 添加的特色图片 -->
-            <img src="https://drive.google.com/uc?export=view&id=16bX621UoNvOP9kyyUf-wpSNihBgwUFgX" alt="骰动幸运游戏平台" class="featured-image">
             
             <div class="game-illustration">
                 <div class="illustration-item">
