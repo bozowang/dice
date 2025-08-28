@@ -390,6 +390,7 @@
             text-shadow: 0 0 5px rgba(255,255,255,0.3);
         }
         
+        /* 3D Theme Animations - Poker Card specific styles */
         .theme-animation {
             position: absolute;
             width: 100%;
@@ -398,7 +399,100 @@
             left: 0;
             perspective: 800px;
         }
+
+        .poker-card-3d {
+            position: absolute;
+            width: 100px; /* Smaller card size */
+            height: 140px;
+            background-color: #f0f0f0;
+            border: 2px solid #333;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            font-family: 'Times New Roman', serif;
+            font-weight: bold;
+            color: #000;
+            transform-style: preserve-3d;
+            backface-visibility: hidden;
+            animation: cardFlip 5s infinite ease-in-out;
+            top: 50%;
+            left: 50%;
+            margin-top: -70px;
+            margin-left: -50px;
+        }
+
+        .poker-card-3d.red { color: #cc0000; }
+        .poker-card-3d.black { color: #000; }
+
+        .card-corner-rank { font-size: 28px; line-height: 1; }
+        .card-corner-suit { font-size: 20px; line-height: 1; }
+        .card-center-suit { font-size: 60px; line-height: 1; }
+
+        .card-top-left, .card-bottom-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .card-bottom-right { transform: rotate(180deg); }
+
+        .card-content {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes cardFlip {
+            0% { transform: translate(-50%, -50%) rotateY(0deg); }
+            50% { transform: translate(-50%, -50%) rotateY(180deg); }
+            100% { transform: translate(-50%, -50%) rotateY(360deg); }
+        }
+
+        /* Specific card for poker themes */
+        .poker-theme-card {
+            position: absolute;
+            width: 80px;
+            height: 120px;
+            background: linear-gradient(135deg, #eee 0%, #fff 100%);
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            font-size: 30px;
+            font-weight: bold;
+            font-family: 'Times New Roman', serif;
+            color: #000;
+            animation: floatAndRotate 10s infinite ease-in-out;
+            opacity: 0.8;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
         
+        .poker-theme-card.red-suit { color: #E03B3B; }
+        .poker-theme-card.black-suit { color: #000; }
+        .poker-theme-card .rank { font-size: 24px; line-height: 1; }
+        .poker-theme-card .suit { font-size: 20px; line-height: 1; }
+        .poker-theme-card .center-suit { font-size: 45px; line-height: 1; }
+
+        .poker-theme-card.one { animation-delay: 0s; transform: translate(calc(-50% - 40px), calc(-50% - 30px)) rotate(-15deg); }
+        .poker-theme-card.two { animation-delay: 2s; transform: translate(calc(-50% + 40px), calc(-50% + 30px)) rotate(15deg); }
+
+        @keyframes floatAndRotate {
+            0% { transform: translate(-50%, -50%) rotate(0deg) scale(1); opacity: 0.8;}
+            25% { transform: translate(calc(-50% - 10px), calc(-50% + 20px)) rotate(5deg) scale(1.05); opacity: 0.9;}
+            50% { transform: translate(-50%, -50%) rotate(0deg) scale(1); opacity: 0.8;}
+            75% { transform: translate(calc(-50% + 10px), calc(-50% - 20px)) rotate(-5deg) scale(1.05); opacity: 0.9;}
+            100% { transform: translate(-50%, -50%) rotate(0deg) scale(1); opacity: 0.8;}
+        }
+
         .background-elements {
             position: fixed;
             top: 0;
@@ -701,80 +795,22 @@
                     <h3>牌九撲克</h3>
                     <p>結合牌九與撲克的傳統遊戲，考驗您的策略與運氣。</p>
                 </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-anchor"></i></div>
-                    <h3>加勒比梭哈</h3>
-                    <p>五張牌比大小，挑戰莊家爭取最高獎勵。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-horse"></i></div>
-                    <h3>Let It Ride</h3>
-                    <p>逐步下注策略遊戲，根據手牌決定是否收回賭注。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-crown"></i></div>
-                    <h3>三公</h3>
-                    <p>三張牌湊點數，簡單快速又刺激的撲克遊戲。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-gem"></i></div>
-                    <h3>百家樂</h3>
-                    <p>預測莊家或閒家誰的點數更接近9，經典賭場遊戲。</p>
-                </div>
-            </div>
-            
-            <a href="#" class="cta-button">立即向店員申請AI挑戰資格！</a>
-        </div>
-        
-        <div class="card">
-            <h2><i class="fas fa-exclamation-triangle"></i> 重要注意事項與警語</h2>
-            <ol>
-                <li><span class="highlight">免費性質</span>：本平台所有遊戲皆為<span class="highlight">完全免費參加</span>，過程中不涉及任何形式的付費、儲值或金錢交易。</li>
-                <li><span class="highlight">獎勵性質</span>：所有遊戲獎項均為本店消費優惠或指定商品，<span class="highlight">絕對無法兌換現金</span>或找零，亦不得轉讓。</li>
-                <li><span class="highlight">最終解釋權</span>：本店保有對所有遊戲規則、獎勵內容、活動辦法及爭議的<span class="highlight">最終解釋權與裁量權</span>。</li>
-                <li><span class="highlight">資格限制</span>：AI挑戰遊戲需參與實體骰子遊戲滿三次並有登記記錄方可開通。</li>
-                <li><span class="highlight">現場原則</span>：所有獎勵的兌換，皆須由挑戰者<span class="highlight">本人親自在現場</span>，並由店員確認後方為有效。</li>
-            </ol>
-            
-            <div class="warning">
-                <i class="fas fa-exclamation-circle"></i> <strong>特別注意：</strong> 獎勵必須在獲獎當下由店員確認，離開畫面後無法兌換！
             </div>
         </div>
         
         <div class="footer">
-            <p><i class="fas fa-heart"></i> <strong>感謝您的參與，祝您遊戲愉快，好運連連！</strong></p>
-            <p>本活動最終解釋權歸本店所有</p>
+            <p>© 2023 骰動幸運 & AI挑戰遊戲平台 | 本活動最終解釋權歸本店所有</p>
         </div>
     </div>
 
     <script>
-        // 模拟参与人数计数器
+        // 參與人數計數器
         document.addEventListener('DOMContentLoaded', function() {
-            // 初始随机值（模拟今日已有参与者）
-            let count = Math.floor(Math.random() * 50) + 20;
-            const counterElement = document.getElementById('participant-count');
+            // 模擬參與人數 (實際應用中可從後端獲取)
+            let count = Math.floor(Math.random() * 50) + 30;
+            document.getElementById('participant-count').textContent = count;
             
-            // 设置初始值
-            counterElement.textContent = count;
-            
-            // 模拟每30秒增加1-3个参与者
-            setInterval(() => {
-                const increment = Math.floor(Math.random() * 3) + 1;
-                count += increment;
-                counterElement.textContent = count;
-                
-                // 添加动画效果
-                counterElement.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    counterElement.style.transform = 'scale(1)';
-                }, 300);
-            }, 30000);
-            
-            // 初始化3D轮播
+            // 初始化3D輪播
             initCarousel();
         });
 
@@ -795,32 +831,32 @@
 
         // Enhanced 3D Theme Animations
         const themeAnimations = {
-            dice: `<div class="theme-animation"><div class="scene-3d"><div class="dice-3d"><div class="face front">●</div><div class="face back">●●</div><div class="face right">●●●</div><div class="face left">●●●●</div><div class="face top">●●●●●</div><div class="face bottom">●●●●●●</div></div></div><style>.scene-3d{width:150px;height:150px;position:absolute;top:50%;left:50%;margin-top:-75px;margin-left:-75px;transform-style:preserve-3d;animation:rotateScene 15s infinite linear;}.dice-3d{width:100%;height:100%;position:relative;transform-style:preserve-3d;transform:translateZ(-75px);}.dice-3d .face{position:absolute;width:150px;height:150px;background:rgba(255,255,255,0.1);border:1px solid #fff;font-size:30px;color:#fff;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;}.face.front{transform:rotateY(0deg) translateZ(75px);}.face.back{transform:rotateY(180deg) translateZ(75px);}.face.right{transform:rotateY(90deg) translateZ(75px);}.face.left{transform:rotateY(-90deg) translateZ(75px);}.face.top{transform:rotateX(90deg) translateZ(75px);}.face.bottom{transform:rotateX(-90deg) translateZ(75px);}@keyframes rotateScene{0%{transform:rotateY(0) rotateX(0);}100%{transform:rotateY(360deg) rotateX(360deg);}}</style></div>`,
-            redpick: `<div class="theme-animation">${Array(10).fill().map((_,i)=>`<div class="card-float" style="--i:${i};--x:${Math.random()*100-50};--y:${Math.random()*100-50};">${['♥','♦'][i%2]}</div>`).join('')}<style>.card-float{position:absolute;font-size:40px;color:${['#ff416c','#ff4b2b'][Math.floor(Math.random()*2)]};animation:float 10s infinite ease-in-out;animation-delay:calc(var(--i)*-1s);left:50%;top:50%;opacity:0;}@keyframes float{0%{transform:translate(0,0) scale(0);opacity:0;}50%{transform:translate(calc(var(--x)*1px), calc(var(--y)*1px)) scale(1);opacity:0.8;}100%{transform:translate(calc(var(--x)*2px), calc(var(--y)*2px)) scale(0);opacity:0;}}</style></div>`,
-            blackjack: `<div class="theme-animation"><div class="blackjack-center">21</div><div class="blackjack-card ace">A♠</div><div class="blackjack-card king">K♥</div><style>.blackjack-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:60px;color:#ffd700;text-shadow:0 0 20px #ffd700;}.blackjack-card{position:absolute;width:80px;height:120px;background:#fff;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:30px;font-weight:bold;box-shadow:0 5px 15px rgba(0,0,0,0.3);}.ace{top:30%;left:40%;animation:moveCard1 8s infinite ease-in-out;}.king{bottom:30%;right:40%;animation:moveCard2 8s infinite ease-in-out;}@keyframes moveCard1{0%,100%{transform:translate(0,0) rotate(-15deg);}50%{transform:translate(50px,-30px) rotate(15deg);}}@keyframes moveCard2{0%,100%{transform:translate(0,0) rotate(15deg);}50%{transform:translate(-50px,30px) rotate(-15deg);}}</style></div>`,
-            bigtwo: `<div class="theme-animation"><div class="bigtwo-card" style="--i:0">2♠</div><div class="bigtwo-card" style="--i:1">A♠</div><div class="bigtwo-card" style="--i:2">K♠</div><div class="bigtwo-card" style="--i:3">Q♠</div><div class="bigtwo-card" style="--i:4">J♠</div><style>.bigtwo-card{position:absolute;width:70px;height:100px;background:#fff;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;box-shadow:0 5px 15px rgba(0,0,0,0.3);top:50%;left:50%;transform:translate(-50%,-50%) rotate(calc(var(--i)*20deg - 40deg));transform-origin:center 200px;}</style></div>`,
-            thirteen: `<div class="theme-animation"><div class="thirteen-pile">13</div><div class="thirteen-card" style="--i:0"></div><div class="thirteen-card" style="--i:1"></div><div class="thirteen-card" style="--i:2"></div><style>.thirteen-pile{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:50px;color:#ff6b6b;text-shadow:0 0 15px #ff6b6b;}.thirteen-card{position:absolute;width:60px;height:90px;background:#fff;border-radius:5px;box-shadow:0 5px 15px rgba(0,0,0,0.3);top:50%;left:50%;transform:translate(calc(-50% + var(--i)*20px), calc(-50% + var(--i)*20px)) rotate(calc(var(--i)*10deg));}</style></div>`,
-            texasholdem: `<div class="theme-animation"><div class="texas-community">TEXAS</div><div class="texas-card" style="--i:0"></div><div class="texas-card" style="--i:1"></div><div class="texas-card" style="--i:2"></div><div class="texas-card" style="--i:3"></div><div class="texas-card" style="--i:4"></div><style>.texas-community{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:30px;color:#4fc3f7;text-shadow:0 0 15px #4fc3f7;}.texas-card{position:absolute;width:50px;height:75px;background:#fff;border-radius:5px;box-shadow:0 5px 15px rgba(0,0,0,0.3);top:50%;left:50%;transform:translate(calc(-50% + var(--i)*60px - 120px), -50%);}</style></div>`,
-            paigow: `<div class="theme-animation"><div class="paigow-tile" style="--i:0"></div><div class="paigow-tile" style="--i:1"></div><div class="paigow-tile" style="--i:2"></div><div class="paigow-tile" style="--i:3"></div><style>.paigow-tile{position:absolute;width:40px;height:80px;background:#f8f8f8;border-radius:3px;box-shadow:0 5px 15px rgba(0,0,0,0.3);top:50%;left:50%;transform:translate(calc(-50% + var(--i)*50px - 75px), -50%) rotate(calc(var(--i)*5deg - 5deg));}</style></div>`,
-            caribbean: `<div class="theme-animation"><div class="caribbean-sea">CARIBBEAN</div><div class="caribbean-card" style="--i:0"></div><div class="caribbean-card" style="--i:1"></div><div class="caribbean-card" style="--i:2"></div><div class="caribbean-card" style="--i:3"></div><div class="caribbean-card" style="--i:4"></div><style>.caribbean-sea{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;color:#00cdac;text-shadow:0 0 15px #00cdac;}.caribbean-card{position:absolute;width:50px;height:75px;background:#fff;border-radius:5px;box-shadow:0 5px 15px rgba(0,0,0,0.3);top:50%;left:50%;transform:translate(calc(-50% + var(--i)*60px - 120px), calc(-50% + 50px));}</style></div>`,
-            letitride: `<div class="theme-animation"><div class="letitride-text">LET IT RIDE</div><div class="letitride-chip" style="--i:0"></div><div class="letitride-chip" style="--i:1"></div><div class="letitride-chip" style="--i:2"></div><style>.letitride-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;color:#ffd700;text-shadow:0 0 15px #ffd700;}.letitride-chip{position:absolute;width:40px;height:40px;border-radius:50%;background:radial-gradient(circle, #ffd700, #ff8c00);box-shadow:0 0 10px #ffd700;top:50%;left:50%;transform:translate(calc(-50% + var(--i)*50px - 50px), calc(-50% + 50px));}</style></div>`,
-            threegong: `<div class="theme-animation"><div class="threegong-text">三公</div><div class="threegong-card" style="--i:0"></div><div class="threegong-card" style="--i:1"></div><div class="threegong-card" style="--i:2"></div><style>.threegong-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:40px;color:#ff6b6b;text-shadow:0 0 15px #ff6b6b;}.threegong-card{position:absolute;width:60px;height:90px;background:#fff;border-radius:5px;box-shadow:0 5px 15px rgba(0,0,0,0.3);top:50%;left:50%;transform:translate(calc(-50% + var(--i)*70px - 70px), -50%);}</style></div>`,
-            baccarat: `<div class="theme-animation"><div class="baccarat-text">BACCARAT</div><div class="baccarat-player">PLAYER</div><div class="baccarat-banker">BANKER</div><style>.baccarat-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:20px;color:#ff416c;text-shadow:0 0 15px #ff416c;}.baccarat-player,.baccarat-banker{position:absolute;padding:10px 20px;background:rgba(255,255,255,0.1);border-radius:5px;font-size:16px;color:#fff;}.baccarat-player{top:40%;left:30%;}.baccarat-banker{top:40%;right:30%;}</style></div>`
+            dice: `<div class="theme-animation"><div class="scene-3d"><div class="dice-3d"><div class="face front">●</div><div class="face back">●●</div><div class="face right">●●●</div><div class="face left">●●●●</div><div class="face top">●●●●●</div><div class="face bottom">●●●●●●</div></div></div><style>.scene-3d{width:150px;height:150px;position:absolute;top:50%;left:50%;margin-top:-75px;margin-left:-75px;transform-style:preserve-3d;animation:rotateScene 15s infinite linear;}.dice-3d{width:100%;height:100%;position:relative;transform-style:preserve-3d;transform:translateZ(-75px);}.dice-3d .face{position:absolute;width:150px;height:150px;background:rgba(255,255,255,0.1);border:1px solid #fff;font-size:30px;color:#fff;display:flex;align-items:center;justify-content:center;flex-wrap:wrap;}.face.front{transform:rotateY(0deg) translateZ(75px);}.face.back{transform:rotateY(180deg) translateZ(75px);}.face.right{transform:rotateY(90deg) translateZ(75px);}.face.left{transform:rotateY(-90deg) translateZ(75px);}.face.top{transform:rotateX(90deg) translateZ(75px);}.face.bottom{transform:rotateX(-90deg) translateZ(75px);}@keyframes rotateScene{0%{transform:rotateX(0) rotateY(0) rotateZ(0);}100%{transform:rotateX(360deg) rotateY(720deg) rotateZ(360deg);}}</style></div>`,
+            redpick: `<div class="theme-animation"><div class="poker-card-3d red"><div class="card-top-left"><div class="card-corner-rank">A</div><div class="card-corner-suit">♥</div></div><div class="card-content"><div class="card-center-suit">♥</div></div><div class="card-bottom-right"><div class="card-corner-rank">A</div><div class="card-corner-suit">♥</div></div></div><div class="poker-theme-card one red-suit"><div class="rank">A</div><div class="suit">♥</div><div class="center-suit">♥</div></div><div class="poker-theme-card two red-suit"><div class="rank">K</div><div class="suit">♥</div><div class="center-suit">♥</div></div></div>`,
+            blackjack: `<div class="theme-animation"><div class="poker-card-3d black"><div class="card-top-left"><div class="card-corner-rank">A</div><div class="card-corner-suit">♠</div></div><div class="card-content"><div class="card-center-suit">♠</div></div><div class="card-bottom-right"><div class="card-corner-rank">A</div><div class="card-corner-suit">♠</div></div></div><div class="poker-theme-card one black-suit"><div class="rank">A</div><div class="suit">♠</div><div class="center-suit">♠</div></div><div class="poker-theme-card two black-suit"><div class="rank">10</div><div class="suit">♠</div><div class="center-suit">♠</div></div></div>`,
+            bigtwo: `<div class="theme-animation"><div class="poker-card-3d red"><div class="card-top-left"><div class="card-corner-rank">2</div><div class="card-corner-suit">♦</div></div><div class="card-content"><div class="card-center-suit">♦</div></div><div class="card-bottom-right"><div class="card-corner-rank">2</div><div class="card-corner-suit">♦</div></div></div><div class="poker-theme-card one red-suit"><div class="rank">2</div><div class="suit">♦</div><div class="center-suit">♦</div></div><div class="poker-theme-card two black-suit"><div class="rank">A</div><div class="suit">♠</div><div class="center-suit">♠</div></div></div>`,
+            thirteen: `<div class="theme-animation"><div class="poker-card-3d black"><div class="card-top-left"><div class="card-corner-rank">K</div><div class="card-corner-suit">♣</div></div><div class="card-content"><div class="card-center-suit">♣</div></div><div class="card-bottom-right"><div class="card-corner-rank">K</div><div class="card-corner-suit">♣</div></div></div><div class="poker-theme-card one black-suit"><div class="rank">K</div><div class="suit">♣</div><div class="center-suit">♣</div></div><div class="poker-theme-card two red-suit"><div class="rank">Q</div><div class="suit">♥</div><div class="center-suit">♥</div></div></div>`,
+            texasholdem: `<div class="theme-animation"><div class="poker-card-3d red"><div class="card-top-left"><div class="card-corner-rank">A</div><div class="card-corner-suit">♥</div></div><div class="card-content"><div class="card-center-suit">♥</div></div><div class="card-bottom-right"><div class="card-corner-rank">A</div><div class="card-corner-suit">♥</div></div></div><div class="poker-theme-card one black-suit"><div class="rank">K</div><div class="suit">♠</div><div class="center-suit">♠</div></div><div class="poker-theme-card two black-suit"><div class="rank">Q</div><div class="suit">♠</div><div class="center-suit">♠</div></div></div>`,
+            paigow: `<div class="theme-animation"><div class="poker-card-3d black"><div class="card-top-left"><div class="card-corner-rank">J</div><div class="card-corner-suit">♠</div></div><div class="card-content"><div class="card-center-suit">♠</div></div><div class="card-bottom-right"><div class="card-corner-rank">J</div><div class="card-corner-suit">♠</div></div></div><div class="poker-theme-card one black-suit"><div class="rank">J</div><div class="suit">♠</div><div class="center-suit">♠</div></div><div class="poker-theme-card two red-suit"><div class="rank">9</div><div class="suit">♦</div><div class="center-suit">♦</div></div></div>`,
+            caribbean: `<div class="theme-animation"><div class="poker-card-3d red"><div class="card-top-left"><div class="card-corner-rank">K</div><div class="card-corner-suit">♥</div></div><div class="card-content"><div class="card-center-suit">♥</div></div><div class="card-bottom-right"><div class="card-corner-rank">K</div><div class="card-corner-suit">♥</div></div></div><div class="poker-theme-card one red-suit"><div class="rank">K</div><div class="suit">♥</div><div class="center-suit">♥</div></div><div class="poker-theme-card two black-suit"><div class="rank">10</div><div class="suit">♣</div><div class="center-suit">♣</div></div></div>`,
+            letitride: `<div class="theme-animation"><div class="poker-card-3d black"><div class="card-top-left"><div class="card-corner-rank">Q</div><div class="card-corner-suit">♣</div></div><div class="card-content"><div class="card-center-suit">♣</div></div><div class="card-bottom-right"><div class="card-corner-rank">Q</div><div class="card-corner-suit">♣</div></div></div><div class="poker-theme-card one black-suit"><div class="rank">Q</div><div class="suit">♣</div><div class="center-suit">♣</div></div><div class="poker-theme-card two red-suit"><div class="rank">J</div><div class="suit">♦</div><div class="center-suit">♦</div></div></div>`,
+            threegong: `<div class="theme-animation"><div class="poker-card-3d red"><div class="card-top-left"><div class="card-corner-rank">3</div><div class="card-corner-suit">♦</div></div><div class="card-content"><div class="card-center-suit">♦</div></div><div class="card-bottom-right"><div class="card-corner-rank">3</div><div class="card-corner-suit">♦</div></div></div><div class="poker-theme-card one red-suit"><div class="rank">3</div><div class="suit">♦</div><div class="center-suit">♦</div></div><div class="poker-theme-card two black-suit"><div class="rank">3</div><div class="suit">♠</div><div class="center-suit">♠</div></div></div>`,
+            baccarat: `<div class="theme-animation"><div class="poker-card-3d black"><div class="card-top-left"><div class="card-corner-rank">9</div><div class="card-corner-suit">♠</div></div><div class="card-content"><div class="card-center-suit">♠</div></div><div class="card-bottom-right"><div class="card-corner-rank">9</div><div class="card-corner-suit">♠</div></div></div><div class="poker-theme-card one black-suit"><div class="rank">9</div><div class="suit">♠</div><div class="center-suit">♠</div></div><div class="poker-theme-card two red-suit"><div class="rank">8</div><div class="suit">♥</div><div class="center-suit">♥</div></div></div>`
         };
 
-        // Initialize 3D carousel
+        // Initialize the 3D carousel
         function initCarousel() {
             const carousel = document.getElementById('carousel');
-            const count = games.length;
-            const radius = 350; // Radius of the carousel
+            const numItems = games.length;
+            const radius = 600; // Radius of the carousel
             
-            // Create carousel items
-            games.forEach((game, i) => {
+            // Create items for the carousel
+            games.forEach((game, index) => {
                 const item = document.createElement('div');
                 item.className = 'carousel-item';
                 
                 // Calculate position in 3D space
-                const angle = (i / count) * Math.PI * 2;
+                const angle = (index / numItems) * Math.PI * 2;
                 const x = Math.sin(angle) * radius;
                 const z = Math.cos(angle) * radius;
                 
@@ -833,10 +869,6 @@
                     <div class="game-content">
                         <h2>${game.title}</h2>
                         <p>${game.desc}</p>
-                        <div class="game-stats">
-                            <span class="game-stat"><i class="fas fa-users"></i> 2-6人</span>
-                            <span class="game-stat"><i class="fas fa-clock"></i> 8回合</span>
-                        </div>
                     </div>
                 `;
                 
