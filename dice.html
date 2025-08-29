@@ -602,22 +602,8 @@
     // 页面加载完成后自动进入全屏
     window.onload = function() {
         // 延迟一下再进入全屏，确保页面已加载
-        setTimeout(openFullscreen, 100);
-        
-        // 监听全屏变化
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('msfullscreenchange', handleFullscreenChange);
+        setTimeout(openFullscreen, 500);
     };
-    
-    function handleFullscreenChange() {
-        if (!document.fullscreenElement && 
-            !document.webkitFullscreenElement && 
-            !document.msFullscreenElement) {
-            // 用户退出了全屏，尝试重新进入全屏
-            setTimeout(openFullscreen, 100);
-        }
-    }
 </script>
 </body>
 </html>
