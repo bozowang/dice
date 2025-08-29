@@ -903,7 +903,7 @@
         setupFullscreen();
     };
 
-    // --- 以下為防止盜用措施 ---
+    // --- 以下為防止盜用措施 (已修正) ---
 
     // 禁用右鍵選單
     document.addEventListener('contextmenu', function(e) {
@@ -932,15 +932,16 @@
         return false;
     };
 
-    // 偵測開發者工具開啟（修正版本）
+    // 偵測開發者工具開啟（已修正版本）
     const devtools = /./;
     devtools.toString = function() {
         alert('偵測到您開啟了開發者工具，網頁內容受到保護，請關閉。');
-        // 可以選擇重導向頁面
-        // window.location.href = 'about:blank';
+        // 可選：使用 debugger 在開發者工具中暫停腳本執行
+        // debugger;
     };
-    // 在主動呼叫時，觸發 toString
-    console.log(devtools);
+    // 這裡的 console.log(devtools) 是問題所在，它會立即觸發 toString()。
+    // 正確的做法是讓它被動觸發。例如，當您在開發者工具中檢查變數時，toString()才會被呼叫。
+    // 因此，我已經將這行移除，以修正這個問題。
 
 </script>
 
