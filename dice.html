@@ -1,7 +1,4 @@
-<
-
-
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
@@ -270,6 +267,62 @@
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3); /* 輕微陰影 */
         }
         
+        /* 全屏覆盖层样式 */
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            color: white;
+            font-size: 24px;
+            text-align: center;
+        }
+        
+        .fullscreen-button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .fullscreen-button:hover {
+            background: var(--secondary);
+            transform: scale(1.05);
+        }
+        
+        /* 倒计时样式 */
+        .countdown {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: #ff6600;
+            padding: 10px 15px;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            z-index: 1000;
+            border: 2px solid #ff6600;
+            box-shadow: 0 0 15px rgba(255, 102, 0, 0.7);
+        }
+        
         @media (max-width: 768px) {
             .game-grid {
                 grid-template-columns: 1fr;
@@ -288,264 +341,363 @@
                 margin: 15px auto;
                 width: fit-content;
             }
+            
+            .countdown {
+                top: 10px;
+                right: 10px;
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-dice"></i> 骰動幸運 & AI挑戰遊戲平台</h1>
-            <p>實體骰子遊戲與AI電子遊戲的完美結合！完全免費參與！</p>
-            <!-- 插入圖片的位置 -->
-            <img src="https://drive.google.com/uc?id=16bX621UoNvOP9kyyUf-wpSNihBgwUFgX" alt="骰動幸運活動圖片" class="header-image">
-            <div class="counter">
-                <i class="fas fa-users"></i> 今日參與: <span id="participant-count">0</span> 人
-            </div>
-        </header>
-        
-        <div class="card">
-            <h2><i class="fas fa-gift"></i> 平台主旨</h2>
-            <p>歡迎體驗本店的實體骰子遊戲與AI每日挑戰系列遊戲！本平台旨在為我們的貴賓提供充滿趣味的互動娛樂體驗，作為對您支持的回饋。<span class="highlight">所有遊戲的參與過程完全免費</span>，獎勵機制純屬娛樂性質。希望您能在此享受挑戰的樂趣。</p>
-            
-            <div class="game-illustration">
-                <div class="illustration-item">
-                    <div class="illustration-icon">
-                        <i class="fas fa-dice"></i>
-                    </div>
-                    <h3>實體骰子</h3>
-                    <p>親手搖動骰子，體驗真實樂趣</p>
-                </div>
-                <div class="illustration-item">
-                    <div class="illustration-icon">
-                        <i class="fas fa-robot"></i>
-                    </div>
-                    <h3>AI挑戰</h3>
-                    <p>參加三次骰子遊戲後解鎖</p>
-                </div>
-                <div class="illustration-item">
-                    <div class="illustration-icon">
-                        <i class="fas fa-hamburger"></i>
-                    </div>
-                    <h3>是日吃到堡</h3>
-                    <p>成功挑戰贏取專屬美食</p>
-                </div>
-            </div>
+
+<!-- 全屏覆盖层 (初始显示) -->
+<div class="fullscreen-overlay" id="fullscreenOverlay">
+    <p>點擊下方按鈕進入全屏模式</p>
+    <button class="fullscreen-button" id="fullscreenButton">進入全屏</button>
+</div>
+
+<!-- 倒计时显示 -->
+<div class="countdown" id="countdown">10</div>
+
+<div class="container">
+    <header>
+        <h1><i class="fas fa-dice"></i> 骰動幸運 & AI挑戰遊戲平台</h1>
+        <p>實體骰子遊戲與AI電子遊戲的完美結合！完全免費參與！</p>
+        <!-- 插入圖片的位置 -->
+        <img src="https://drive.google.com/uc?id=16bX621UoNvOP9kyyUf-wpSNihBgwUFgX" alt="骰動幸運活動圖片" class="header-image">
+        <div class="counter">
+            <i class="fas fa-users"></i> 今日參與: <span id="participant-count">0</span> 人
         </div>
+    </header>
+    
+    <div class="card">
+        <h2><i class="fas fa-gift"></i> 平台主旨</h2>
+        <p>歡迎體驗本店的實體骰子遊戲與AI每日挑戰系列遊戲！本平台旨在為我們的貴賓提供充滿趣味的互動娛樂體驗，作為對您支持的回饋。<span class="highlight">所有遊戲的參與過程完全免費</span>，獎勵機制純屬娛樂性質。希望您能在此享受挑戰的樂趣。</p>
         
-        <div class="card">
-            <h2><i class="fas fa-dice-three"></i> 【骰動幸運】實體骰子遊戲規則</h2>
-            
-            <div class="emphasis">
-                <i class="fas fa-exclamation-circle"></i> <strong>完全免費！每日一次！</strong> 無需任何消費即可參與，每人每日限挑戰一次。
+        <div class="game-illustration">
+            <div class="illustration-item">
+                <div class="illustration-icon">
+                    <i class="fas fa-dice"></i>
+                </div>
+                <h3>實體骰子</h3>
+                <p>親手搖動骰子，體驗真實樂趣</p>
             </div>
-            
-            <h3><i class="fas fa-hand-point-right"></i> 如何參與</h3>
-            <p>請向店員表明您要參與「骰動幸運」活動，店員將為您提供一個專用的骰盅及三顆骰子。</p>
-            
-            <h3><i class="fas fa-bullseye"></i> 挑戰目標</h3>
-            <p>玩家需使用骰盅搖動三個骰子。若三個骰子停止後，<span class="highlight">同時出現相同點數</span>（例如：三個1、三個2、...三個6），即為挑戰成功！</p>
-            
-            <h3><i class="fas fa-check-circle"></i> 正確操作方式</h3>
-            <ol>
-                <li>請保持骰盅<span class="highlight">垂直上下</span>搖動。</li>
-                <li>請至少搖動<span class="highlight">3次</span>以上，讓骰子充分碰撞。</li>
-                <li>將骰盅平穩地放在桌上，等待骰子完全靜止。</li>
-                <li><span class="highlight">結果以骰子靜置在骰盅底座上的點數為準。</span></li>
-            </ol>
-            
-            <h3><i class="fas fa-ban"></i> 無效動作警告</h3>
-            <p>為確保遊戲公平，若出現以下情況，該次投擲將被視為無效，且視為已使用當日機會：</p>
-            <ul>
-                <li>請勿<span class="highlight">用力砸擲</span>骰盅。</li>
-                <li>請勿以<span class="highlight">拋投、滾動</span>或其他非垂直搖動的方式操作骰盅。</li>
-                <li>若有骰子跳出骰盅外，該次結果無效。</li>
-            </ul>
-            
-            <h3><i class="fas fa-award"></i> 成功獎勵</h3>
-            <p>挑戰成功者，即可<span class="highlight">免費獲得一份</span>當日限定的「是日吃到堡」！</p>
-            
-            <div class="warning">
-                <i class="fas fa-exclamation-circle"></i> <strong>兌獎注意：</strong> 此獎品僅限<span class="highlight">當日現場兌換</span>，不可轉讓、兌換現金或找零。獎品必須在成功後立即由店員確認並兌換。
+            <div class="illustration-item">
+                <div class="illustration-icon">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <h3>AI挑戰</h3>
+                <p>參加三次骰子遊戲後解鎖</p>
             </div>
-        </div>
-        
-        <div class="card">
-            <h2><i class="fas fa-robot"></i> AI每日挑戰遊戲 <span class="badge">進階功能</span></h2>
-            
-            <div class="emphasis">
-                <i class="fas fa-unlock"></i> <strong>解鎖條件：</strong> 只需參與「骰動幸運」實體骰子遊戲滿三次以上（有登記記錄），即可獲得AI每日挑戰遊戲的參與資格！
+            <div class="illustration-item">
+                <div class="illustration-icon">
+                    <i class="fas fa-hamburger"></i>
+                </div>
+                <h3>是日吃到堡</h3>
+                <p>成功挑戰贏取專屬美食</p>
             </div>
-            
-            <h3><i class="fas fa-key"></i> 如何取得資格</h3>
-            <ol>
-                <li>參與「骰動幸運」實體遊戲滿三次</li>
-                <li>每次參與需有店員登記記錄</li>
-                <li>向店員申請開通AI挑戰遊戲帳號</li>
-                <li>獲得專屬帳號密碼後即可登入平台</li>
-            </ol>
-            
-            <h3><i class="fas fa-gamepad"></i> 遊戲規則</h3>
-            <ol>
-                <li><span class="highlight">參加資格</span>：每日每位玩家僅限挑戰一次。挑戰資格將於次日凌晨零時重置。</li>
-                <li><span class="highlight">遊戲回合</span>：所有AI挑戰遊戲均為 <span class="highlight">8</span> 回合制。</li>
-                <li><span class="highlight">勝負判定</span>：每回合的勝負將根據該遊戲的特定規則進行。最終獎勵則依據您在8回合挑戰結束後的總勝場數決定。</li>
-                <li><span class="highlight">時間限制</span>：部分遊戲設有操作倒數計時（如：20秒）。請務必在時間內完成指定操作，逾時將視為放棄該回合。</li>
-            </ol>
-            
-            <h3><i class="fas fa-trophy"></i> 獎勵機制</h3>
-            <p>AI挑戰結束後，系統將根據您的總「勝場數」來決定獎勵。</p>
-            
-            <table class="reward-table">
-                <thead>
-                    <tr>
-                        <th>勝場數</th>
-                        <th>獎勵內容</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>獲勝 5 回合</td>
-                        <td>買五送一卷 (可寄放)</td>
-                    </tr>
-                    <tr>
-                        <td>獲勝 6 回合</td>
-                        <td>第二件半價 (是日吃到堡或指定商品)</td>
-                    </tr>
-                    <tr>
-                        <td>獲勝 7 回合</td>
-                        <td>買一送一 (是日吃到堡或指定商品)</td>
-                    </tr>
-                    <tr>
-                        <td>獲勝 8 回合</td>
-                        <td>免費 (是日吃到堡或指定商品)</td>
-                    </tr>
-                </tbody>
-            </table>
-            
-            <div class="emphasis">
-                <i class="fas fa-shield-alt"></i> <strong>保底機制：</strong> 若玩家連續6次登入AI挑戰（每次間隔不得超過3天）皆未獲得上述任何獎項，則在第7次登入挑戰時，系統將直接給予「免費」獎勵。
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2><i class="fas fa-gamepad"></i> AI挑戰遊戲種類</h2>
-            <p>AI每日挑戰平台提供多種經典遊戲，每種遊戲都有獨特的樂趣和挑戰性！</p>
-            
-            <div class="game-grid">
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-dice-six"></i></div>
-                    <h3>骰子挑戰</h3>
-                    <p>透過擲骰與電腦比大小或牌型組合，贏得回合勝利。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-heart"></i></div>
-                    <h3>撿紅點</h3>
-                    <p>經典撲克牌遊戲，透過湊對或湊成10點取得更高分數。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-club"></i></div>
-                    <h3>21點</h3>
-                    <p>讓手中牌點數總和比莊家更接近21點但不超過。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-layer-group"></i></div>
-                    <h3>大老二</h3>
-                    <p>比較牌型大小，先出完手中牌的玩家獲勝。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-layer-group"></i></div>
-                    <h3>十三支</h3>
-                    <p>將13張牌分為三墩，與電腦的三墩分別比大小。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-diamond"></i></div>
-                    <h3>德州撲克</h3>
-                    <p>使用五張公共牌組合最佳手牌，與AI一較高下。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-square"></i></div>
-                    <h3>牌九撲克</h3>
-                    <p>結合牌九與撲克的傳統遊戲，考驗您的策略與運氣。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-anchor"></i></div>
-                    <h3>加勒比梭哈</h3>
-                    <p>五張牌比大小，挑戰莊家爭取最高獎勵。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-horse"></i></div>
-                    <h3>Let It Ride</h3>
-                    <p>逐步下注策略遊戲，根據手牌決定是否收回賭注。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-crown"></i></div>
-                    <h3>三公</h3>
-                    <p>三張牌湊點數，簡單快速又刺激的撲克遊戲。</p>
-                </div>
-                
-                <div class="game-card">
-                    <div class="game-icon"><i class="fas fa-gem"></i></div>
-                    <h3>百家樂</h3>
-                    <p>預測莊家或閒家誰的點數更接近9，經典賭場遊戲。</p>
-                </div>
-            </div>
-            
-            <a href="#" class="cta-button">立即向店員申請AI挑戰資格！</a>
-        </div>
-        
-        <div class="card">
-            <h2><i class="fas fa-exclamation-triangle"></i> 重要注意事項與警語</h2>
-            <ol>
-                <li><span class="highlight">免費性質</span>：本平台所有遊戲皆為<span class="highlight">完全免費參加</span>，過程中不涉及任何形式的付費、儲值或金錢交易。</li>
-                <li><span class="highlight">獎勵性質</span>：所有遊戲獎項均為本店消費優惠或指定商品，<span class="highlight">絕對無法兌換現金</span>或找零，亦不得轉讓。</li>
-                <li><span class="highlight">最終解釋權</span>：本店保有對所有遊戲規則、獎勵內容、活動辦法及爭議的<span class="highlight">最終解釋權與裁量權</span>。</li>
-                <li><span class="highlight">資格限制</span>：AI挑戰遊戲需參與實體骰子遊戲滿三次並有登記記錄方可開通。</li>
-                <li><span class="highlight">現場原則</span>：所有獎勵的兌換，皆須由挑戰者<span class="highlight">本人親自在現場</span>，並由店員確認後方為有效。</li>
-            </ol>
-            
-            <div class="warning">
-                <i class="fas fa-exclamation-circle"></i> <strong>特別注意：</strong> 獎勵必須在獲獎當下由店員確認，離開畫面後無法兌換！
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p><i class="fas fa-heart"></i> <strong>感謝您的參與，祝您遊戲愉快，好運連連！</strong></p>
-            <p>本活動最終解釋權歸本店所有</p>
         </div>
     </div>
-
-    <script>
-        // 模拟参与人数计数器
-        document.addEventListener('DOMContentLoaded', function() {
-            // 初始随机值（模拟今日已有参与者）
-            let count = Math.floor(Math.random() * 50) + 20;
-            const counterElement = document.getElementById('participant-count');
+    
+    <div class="card">
+        <h2><i class="fas fa-dice-three"></i> 【骰動幸運】實體骰子遊戲規則</h2>
+        
+        <div class="emphasis">
+            <i class="fas fa-exclamation-circle"></i> <strong>完全免費！每日一次！</strong> 無需任何消費即可參與，每人每日限挑戰一次。
+        </div>
+        
+        <h3><i class="fas fa-hand-point-right"></i> 如何參與</h3>
+        <p>請向店員表明您要參與「骰動幸運」活動，店員將為您提供一個專用的骰盅及三顆骰子。</p>
+        
+        <h3><i class="fas fa-bullseye"></i> 挑戰目標</h3>
+        <p>玩家需使用骰盅搖動三個骰子。若三個骰子停止後，<span class="highlight">同時出現相同點數</span>（例如：三個1、三個2、...三個6），即為挑戰成功！</p>
+        
+        <h3><i class="fas fa-check-circle"></i> 正確操作方式</h3>
+        <ol>
+            <li>請保持骰盅<span class="highlight">垂直上下</span>搖動。</li>
+            <li>請至少搖動<span class="highlight">3次</span>以上，讓骰子充分碰撞。</li>
+            <li>將骰盅平穩地放在桌上，等待骰子完全靜止。</li>
+            <li><span class="highlight">結果以骰子靜置在骰盅底座上的點數為準。</span></li>
+        </ol>
+        
+        <h3><i class="fas fa-ban"></i> 無效動作警告</h3>
+        <p>為確保遊戲公平，若出現以下情況，該次投擲將被視為無效，且視為已使用當日機會：</p>
+        <ul>
+            <li>請勿<span class="highlight">用力砸擲</span>骰盅。</li>
+            <li>請勿以<span class="highlight">拋投、滾動</span>或其他非垂直搖動的方式操作骰盅。</li>
+            <li>若有骰子跳出骰盅外，該次結果無效。</li>
+        </ul>
+        
+        <h3><i class="fas fa-award"></i> 成功獎勵</h3>
+        <p>挑戰成功者，即可<span class="highlight">免費獲得一份</span>當日限定的「是日吃到堡」！</p>
+        
+        <div class="warning">
+            <i class="fas fa-exclamation-circle"></i> <strong>兌獎注意：</strong> 此獎品僅限<span class="highlight">當日現場兌換</span>，不可轉讓、兌換現金或找零。獎品必須在成功後立即由店員確認並兌換。
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2><i class="fas fa-robot"></i> AI每日挑戰遊戲 <span class="badge">進階功能</span></h2>
+        
+        <div class="emphasis">
+            <i class="fas fa-unlock"></i> <strong>解鎖條件：</strong> 只需參與「骰動幸運」實體骰子遊戲滿三次以上（有登記記錄），即可獲得AI每日挑戰遊戲的參與資格！
+        </div>
+        
+        <h3><i class="fas fa-key"></i> 如何取得資格</h3>
+        <ol>
+            <li>參與「骰動幸運」實體遊戲滿三次</li>
+            <li>每次參與需有店員登記記錄</li>
+            <li>向店員申請開通AI挑戰遊戲帳號</li>
+            <li>獲得專屬帳號密碼後即可登入平台</li>
+        </ol>
+        
+        <h3><i class="fas fa-gamepad"></i> 遊戲規則</h3>
+        <ol>
+            <li><span class="highlight">參加資格</span>：每日每位玩家僅限挑戰一次。挑戰資格將於次日凌晨零時重置。</li>
+            <li><span class="highlight">遊戲回合</span>：所有AI挑戰遊戲均為 <span class="highlight">8</span> 回合制。</li>
+            <li><span class="highlight">勝負判定</span>：每回合的勝負將根據該遊戲的特定規則進行。最終獎勵則依據您在8回合挑戰結束後的總勝場數決定。</li>
+            <li><span class="highlight">時間限制</span>：部分遊戲設有操作倒數計時（如：20秒）。請務必在時間內完成指定操作，逾時將視為放棄該回合。</li>
+        </ol>
+        
+        <h3><i class="fas fa-trophy"></i> 獎勵機制</h3>
+        <p>AI挑戰結束後，系統將根據您的總「勝場數」來決定獎勵。</p>
+        
+        <table class="reward-table">
+            <thead>
+                <tr>
+                    <th>勝場數</th>
+                    <th>獎勵內容</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>獲勝 5 回合</td>
+                    <td>買五送一卷 (可寄放)</td>
+                </tr>
+                <tr>
+                    <td>獲勝 6 回合</td>
+                    <td>第二件半價 (是日吃到堡或指定商品)</td>
+                </tr>
+                <tr>
+                    <td>獲勝 7 回合</td>
+                    <td>買一送一 (是日吃到堡或指定商品)</td>
+                </tr>
+                <tr>
+                    <td>獲勝 8 回合</td>
+                    <td>免費 (是日吃到堡或指定商品)</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="emphasis">
+            <i class="fas fa-shield-alt"></i> <strong>保底機制：</strong> 若玩家連續6次登入AI挑戰（每次間隔不得超過3天）皆未獲得上述任何獎項，則在第7次登入挑戰時，系統將直接給予「免費」獎勵。
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2><i class="fas fa-gamepad"></i> AI挑戰遊戲種類</h2>
+        <p>AI每日挑戰平台提供多種經典遊戲，每種遊戲都有獨特的樂趣和挑戰性！</p>
+        
+        <div class="game-grid">
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-dice-six"></i></div>
+                <h3>骰子挑戰</h3>
+                <p>透過擲骰與電腦比大小或牌型組合，贏得回合勝利。</p>
+            </div>
             
-            // 设置初始值
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-heart"></i></div>
+                <h3>撿紅點</h3>
+                <p>經典撲克牌遊戲，透過湊對或湊成10點取得更高分數。</p>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-club"></i></div>
+                <h3>21點</h3>
+                <p>讓手中牌點數總和比莊家更接近21點但不超過。</p>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-layer-group"></i></div>
+                <h3>大老二</h3>
+                <p>比較牌型大小，先出完手中牌的玩家獲勝。</p>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-layer-group"></i></div>
+                <h3>十三支</h3>
+                <p>將13張牌分為三墩，與電腦的三墩分別比大小。</p>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-diamond"></i></div>
+                <h3>德州撲克</h3>
+                <p>使用五張公共牌組合最佳手牌，與AI一較高下。</p>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-square"></i></div>
+                <h3>牌九撲克</h3>
+                <p>結合牌九與撲克的傳統遊戲，考驗您的策略與運氣。</p>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-anchor"></i></div>
+                <h3>加勒比梭哈</h3>
+                <p>五張牌比大小，挑戰莊家爭取最高獎勵。</p>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-horse"></i></div>
+                <h3>Let It Ride</h3>
+                <p>逐步下注策略遊戲，根據手牌決定是否收回賭注。</p>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-crown"></i></div>
+                <h3>三公</h3>
+                <p>三張牌湊點數，簡單快速又刺激的撲克遊戲。</p>
+            </div>
+            
+            <div class="game-card">
+                <div class="game-icon"><i class="fas fa-gem"></i></div>
+                <h3>百家樂</h3>
+                <p>預測莊家或閒家誰的點數更接近9，經典賭場遊戲。</p>
+            </div>
+        </div>
+        
+        <a href="#" class="cta-button">立即向店員申請AI挑戰資格！</a>
+    </div>
+    
+    <div class="card">
+        <h2><i class="fas fa-exclamation-triangle"></i> 重要注意事項與警語</h2>
+        <ol>
+            <li><span class="highlight">免費性質</span>：本平台所有遊戲皆為<span class="highlight">完全免費參加</span>，過程中不涉及任何形式的付費、儲值或金錢交易。</li>
+            <li><span class="highlight">獎勵性質</span>：所有遊戲獎項均為本店消費優惠或指定商品，<span class="highlight">絕對無法兌換現金</span>或找零，亦不得轉讓。</li>
+            <li><span class="highlight">最終解釋權</span>：本店保有對所有遊戲規則、獎勵內容、活動辦法及爭議的<span class="highlight">最終解釋權與裁量權</span>。</li>
+            <li><span class="highlight">資格限制</span>：AI挑戰遊戲需參與實體骰子遊戲滿三次並有登記記錄方可開通。</li>
+            <li><span class="highlight">現場原則</span>：所有獎勵的兌換，皆須由挑戰者<span class="highlight">本人親自在現場</span>，並由店員確認後方為有效。</li>
+        </ol>
+        
+        <div class="warning">
+            <i class="fas fa-exclamation-circle"></i> <strong>特別注意：</strong> 獎勵必須在獲獎當下由店員確認，離開畫面後無法兌換！
+        </div>
+    </div>
+    
+    <div class="footer">
+        <p><i class="fas fa-heart"></i> <strong>感謝您的參與，祝您遊戲愉快，好運連連！</strong></p>
+        <p>本活動最終解釋權歸本店所有</p>
+    </div>
+</div>
+
+<script>
+    // 模拟参与人数计数器
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始随机值（模拟今日已有参与者）
+        let count = Math.floor(Math.random() * 50) + 20;
+        const counterElement = document.getElementById('participant-count');
+        
+        // 设置初始值
+        counterElement.textContent = count;
+        
+        // 模拟每30秒增加1-3个参与者
+        setInterval(() => {
+            const increment = Math.floor(Math.random() * 3) + 1;
+            count += increment;
             counterElement.textContent = count;
             
-            // 模拟每30秒增加1-3个参与者
-            setInterval(() => {
-                const increment = Math.floor(Math.random() * 3) + 1;
-                count += increment;
-                counterElement.textContent = count;
-                
-                // 添加动画效果
-                counterElement.style.transform = 'scale(1.2)';
-                setTimeout(() => {
-                    counterElement.style.transform = 'scale(1)';
-                }, 300);
-            }, 30000);
-        });
-    </script>
+            // 添加动画效果
+            counterElement.style.transform = 'scale(1.2)';
+            setTimeout(() => {
+                counterElement.style.transform = 'scale(1)';
+            }, 300);
+        }, 30000);
+    });
+
+    // 防右鍵功能
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+    });
+
+    // 防重新整理功能 (Ctrl+R, F5 等)
+    document.addEventListener('keydown', function(e) {
+        // 禁用 F5
+        if (e.key === 'F5' || e.keyCode === 116) {
+            e.preventDefault();
+            return false;
+        }
+        
+        // 禁用 Ctrl+R
+        if ((e.ctrlKey || e.metaKey) && e.key === 'r') {
+            e.preventDefault();
+            return false;
+        }
+        
+        // 禁用 Ctrl+Shift+R
+        if ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key === 'R') {
+            e.preventDefault();
+            return false;
+        }
+    });
+
+    // 全屏功能
+    function openFullscreen() {
+        const elem = document.documentElement;
+        
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) { /* IE11 */
+            elem.msRequestFullscreen();
+        }
+        
+        // 隐藏全屏提示
+        document.getElementById('fullscreenOverlay').style.display = 'none';
+        
+        // 开始倒计时
+        startCountdown();
+    }
+
+    // 倒计时功能
+    function startCountdown() {
+        let countdownElement = document.getElementById('countdown');
+        let seconds = 10;
+        
+        let countdownInterval = setInterval(function() {
+            seconds--;
+            countdownElement.textContent = seconds;
+            
+            if (seconds <= 0) {
+                clearInterval(countdownInterval);
+                // 跳转到指定页面
+                window.location.href = 'https://bozowang.github.io/dice/dice.html';
+            }
+        }, 1000);
+    }
+
+    // 添加全屏按钮事件监听
+    document.getElementById('fullscreenButton').addEventListener('click', openFullscreen);
+    
+    // 检查是否已经是全屏模式
+    function checkFullscreen() {
+        if (document.fullscreenElement || 
+            document.webkitFullscreenElement || 
+            document.msFullscreenElement) {
+            document.getElementById('fullscreenOverlay').style.display = 'none';
+            startCountdown();
+        }
+    }
+    
+    // 监听全屏变化
+    document.addEventListener('fullscreenchange', checkFullscreen);
+    document.addEventListener('webkitfullscreenchange', checkFullscreen);
+    document.addEventListener('msfullscreenchange', checkFullscreen);
+</script>
 </body>
 </html>
