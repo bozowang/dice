@@ -814,7 +814,7 @@
         { title: "牌九撲克", desc: "結合傳統牌九與撲克的智慧", theme: "paigow" },
         { title: "加勒比海梭哈", desc: "與莊家一對一的五張牌對決", theme: "caribbean" },
         { title: "Let It Ride", desc: "隨著公共牌的揭曉增加您的賭注", theme: "letitride" },
-        { title: "三公", desc: "簡單快速的撲克比大小遊戲", theme: "threegong" },
+        { title: "三公", desc: "簡單快速又刺激的撲克遊戲", theme: "threegong" },
         { title: "百家樂", desc: "優雅的經典娛樂場遊戲", theme: "baccarat" }
     ];
 
@@ -902,54 +902,6 @@
         initCounter();
         setupFullscreen();
     };
-
-    // --- 以下為防止盜用措施 ---
-
-    // 禁用右鍵選單
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        alert('此網頁內容受版權保護，不允許右鍵操作。');
-    });
-
-    // 禁用F12、Ctrl+Shift+I等開發者工具快捷鍵
-    document.addEventListener('keydown', function(e) {
-        if (
-            e.keyCode === 123 || // F12
-            (e.ctrlKey && e.shiftKey && e.keyCode === 73) || // Ctrl+Shift+I
-            (e.ctrlKey && e.shiftKey && e.keyCode === 74) || // Ctrl+Shift+J
-            (e.ctrlKey && e.keyCode === 85) // Ctrl+U (view source)
-        ) {
-            e.preventDefault();
-            alert('此網頁內容受保護，無法使用開發者工具。');
-        }
-    });
-
-    // 禁用文字選取與複製
-    document.body.onselectstart = function() {
-        return false;
-    };
-    document.body.oncopy = function() {
-        return false;
-    };
-
-    // 偵測開發者工具開啟
-    const devtools = /./;
-    devtools.toString = function() {
-        this.opened = true;
-        // 這裡可以加入重導向或顯示警告的邏輯
-        // window.location.href = 'about:blank';
-        // alert('偵測到開發者工具已開啟，頁面將關閉。');
-    };
-    setInterval(() => {
-        devtools.opened = false;
-        console.log(devtools);
-        if (devtools.opened) {
-            alert('偵測到您開啟了開發者工具，網頁內容受到保護，請關閉。');
-            // 可以選擇重導向頁面
-            // window.location.href = 'about:blank';
-        }
-    }, 1000);
-
 </script>
 
 </body>
