@@ -267,6 +267,26 @@
             box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
         }
 
+        .fullscreen-button {
+            display: block;
+            width: fit-content;
+            margin: 15px auto;
+            padding: 10px 20px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: white;
+            background-color: var(--dark);
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        
+        .fullscreen-button:hover {
+            background-color: var(--primary);
+            transform: scale(1.05);
+        }
+
         @media (max-width: 768px) {
             .game-grid {
                 grid-template-columns: 1fr;
@@ -295,6 +315,9 @@
 <body>
 
 <div class="container">
+    <button id="fullscreen-btn" class="fullscreen-button">
+        <i class="fas fa-expand"></i> 點此進入全屏
+    </button>
     <header>
         <h1><i class="fas fa-dice"></i> 骰動幸運 & AI挑戰遊戲平台</h1>
         <p>實體骰子遊戲與AI電子遊戲的完美結合！完全免費參與！</p>
@@ -525,7 +548,7 @@
 </div>
 
 <script>
-    // 模拟参与人数计数器
+    // 模擬參與人數計數器
     document.addEventListener('DOMContentLoaded', function() {
         let count = Math.floor(Math.random() * 50) + 20;
         const counterElement = document.getElementById('participant-count');
@@ -544,23 +567,17 @@
         }, 30000);
     });
 
-    // 页面加载后3秒进入全屏
-    function openFullscreen(elem) {
+    // 透過點擊按鈕來觸發全屏
+    document.getElementById('fullscreen-btn').addEventListener('click', function() {
+        const elem = document.documentElement;
         if (elem.requestFullscreen) {
-            elem.requestFullscreen().catch(err => console.error('全屏请求错误:', err));
-        } else if (elem.webkitRequestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) { /* Safari */
             elem.webkitRequestFullscreen();
-        } else if (elem.msRequestFullscreen) {
+        } else if (elem.msRequestFullscreen) { /* IE11 */
             elem.msRequestFullscreen();
         }
-    }
-
-    window.onload = function() {
-        setTimeout(() => {
-            const elem = document.documentElement;
-            openFullscreen(elem);
-        }, 3000); // 3秒延迟
-    };
+    });
 </script>
 </body>
 </html>
