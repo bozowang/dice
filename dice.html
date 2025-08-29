@@ -944,6 +944,32 @@
     // 因此，我已經將這行移除，以修正這個問題。
 
 </script>
+<!-- 在您希望顯示計數器的地方放置一個元素 -->
+<p>本站訪問次數：<span id="visitorCounter">0</span></p>
 
+<script>
+// 檢查瀏覽器是否支援 localStorage
+if (typeof(Storage) !== "undefined") {
+    // 嘗試從 localStorage 中獲取當前的計數
+    let count = localStorage.getItem('visitCount');
+
+    // 如果是第一次訪問，count 會是 null，將其設為 0
+    if (count === null) {
+        count = 0;
+    }
+
+    // 將計數增加 1
+    count++;
+    
+    // 將更新後的計數存回 localStorage
+    localStorage.setItem('visitCount', count);
+    
+    // 更新網頁上顯示的數字
+    document.getElementById('visitorCounter').textContent = count;
+} else {
+    // 如果不支援 localStorage，則顯示警告或保持為 0
+    document.getElementById('visitorCounter').textContent = "0 (計數器未支援)";
+}
+</script>
 </body>
 </html>
